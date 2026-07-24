@@ -6,6 +6,8 @@ import EvalBar from '../components/EvalBar';
 import EngineLines from '../components/EngineLines';
 import BookMoves from '../components/BookMoves';
 import MoveList from '../components/MoveList';
+import EngineSettings from '../components/EngineSettings';
+import type { EngineSettingsValue } from '../components/EngineSettings';
 import { useStockfish } from '../hooks/useStockfish';
 import { useAsync } from '../hooks/useAsync';
 import { getOpeningExplorer } from '../api/explorer';
@@ -23,17 +25,18 @@ export default function Analysis() {
   const [importError, setImportError] = useState<string | undefined>(undefined);
   const [copied, setCopied] = useState(false);
   const [showBestMove, setShowBestMove] = useState(true);
+  const [engineSettings, setEngineSettings] = useState<EngineSettingsValue>({ multiPv: 3, depth: 18, skillLevel: null });
 
-  const stockfish = useStockfish();
+  const stockfish = useStockfish(true, { multiPv: engineSettings.multiPv, skillLevel: engineSettings.skillLevel });
   const fen = index === -1 ? basePosition : moves[index].fen;
   const book = useAsync(() => getOpeningExplorer(fen), [fen]);
 
   useEffect(() => {
     if (!stockfish.ready) return;
-    const t = setTimeout(() => stockfish.analyze(fen, 18), 200);
+    const t = setTimeout(() => stockfish.analyze(fen, engineSettings.depth), 200);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fen, stockfish.ready]);
+  }, [fen, stockfish.ready, engineSettings.multiPv, engineSettings.depth, engineSettings.skillLevel]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -176,6 +179,7 @@ export default function Analysis() {
           >
             <Target size={15} /> Best move
           </button>
+          <EngineSettings value={engineSettings} onChange={setEngineSettings} />
         </div>
       </div>
 

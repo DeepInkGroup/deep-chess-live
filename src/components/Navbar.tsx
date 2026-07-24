@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { ChevronDown, Menu, Search, X } from 'lucide-react';
 
@@ -30,6 +30,7 @@ export default function Navbar() {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
   const moreRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -37,6 +38,16 @@ export default function Navbar() {
     }
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  useLayoutEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    const setHeight = () => document.documentElement.style.setProperty('--header-h', `${el.offsetHeight}px`);
+    setHeight();
+    const observer = new ResizeObserver(setHeight);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   function handleSearch(e: React.FormEvent) {
@@ -49,8 +60,8 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5">
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5">
+      <div ref={barRef} className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
         <NavLink to="/" className="flex items-center gap-2 shrink-0">
           <span className="font-display text-lg font-semibold tracking-tight text-ink-100">
             DeepChess<span className="text-gradient-gold"> Live</span>

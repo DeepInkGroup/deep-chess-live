@@ -23,7 +23,7 @@ function App() {
   return (
     <>
       <Navbar />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-8 pt-[calc(var(--header-h,64px)+2rem)] sm:px-6 sm:pb-10 sm:pt-[calc(var(--header-h,64px)+2.5rem)]">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/tv" element={<LiveTv />} />

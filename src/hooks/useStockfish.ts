@@ -15,7 +15,12 @@ export interface EngineState {
   bestMoveUci?: string;
 }
 
-const MULTIPV = 3;
+export interface EngineOptions {
+  /** Number of principal variations to search in parallel. */
+  multiPv?: number;
+  /** 0-20. Leave undefined/null for full playing strength. */
+  skillLevel?: number | null;
+}
 
 function parseInfoLine(line: string): EngineLine | null {
   if (!line.startsWith('info') || !line.includes(' pv ')) return null;
@@ -35,7 +40,8 @@ function parseInfoLine(line: string): EngineLine | null {
   };
 }
 
-export function useStockfish(enabled = true) {
+export function useStockfish(enabled = true, options: EngineOptions = {}) {
+  const { multiPv = 3, skillLevel = null } = options;
   const workerRef = useRef<Worker | null>(null);
   const [state, setState] = useState<EngineState>({ ready: false, thinking: false, lines: [] });
   const stateRef = useRef(state);
@@ -50,10 +56,9 @@ export function useStockfish(enabled = true) {
     worker.onmessage = (e: MessageEvent<string>) => {
       const line = typeof e.data === 'string' ? e.data : '';
       if (line === 'uciok') {
-        worker.postMessage('setoption name MultiPV value ' + MULTIPV);
         worker.postMessage('isready');
       } else if (line === 'readyok') {
-        setState((s) => ({ ...s, ready: true }));
+        setState((s) => (s.ready ? s : { ...s, ready: true }));
       } else if (line.startsWith('info')) {
         const parsed = parseInfoLine(line);
         if (parsed) {
@@ -80,6 +85,19 @@ export function useStockfish(enabled = true) {
       setState({ ready: false, thinking: false, lines: [] });
     };
   }, [enabled]);
+
+  // Apply (or re-apply) engine options whenever they change or the engine becomes ready.
+  useEffect(() => {
+    const worker = workerRef.current;
+    if (!worker || !state.ready) return;
+    worker.postMessage(`setoption name MultiPV value ${multiPv}`);
+    if (skillLevel === null || skillLevel === undefined) {
+      worker.postMessage('setoption name UCI_LimitStrength value false');
+    } else {
+      worker.postMessage('setoption name UCI_LimitStrength value true');
+      worker.postMessage(`setoption name Skill Level value ${skillLevel}`);
+    }
+  }, [multiPv, skillLevel, state.ready]);
 
   function analyze(fen: string, depth = 18) {
     const worker = workerRef.current;

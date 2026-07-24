@@ -138,9 +138,7 @@ export default function Openings() {
             </p>
           )}
           {!book.loading && book.error && (
-            <p className="rounded-2xl border border-white/8 bg-ink-850/50 p-4 text-center text-sm text-ink-400">
-              Opening data is temporarily unavailable.
-            </p>
+            <p className="px-2 text-center text-xs text-ink-500">Live game statistics aren't reachable right now — try again shortly.</p>
           )}
         </div>
       </div>

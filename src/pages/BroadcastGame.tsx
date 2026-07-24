@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, FlipVertical2, Radio } from 'lucide-react';
+import { ArrowLeft, Cpu, FlipVertical2, Radio } from 'lucide-react';
 import BoardPanel from '../components/BoardPanel';
 import PlayerBadge from '../components/PlayerBadge';
 import MoveList from '../components/MoveList';
+import EvalBar from '../components/EvalBar';
+import EngineLines from '../components/EngineLines';
 import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
 import { usePolling } from '../hooks/useAsync';
 import { getBroadcastRound, getBroadcastRoundPgn } from '../api/lichess';
-import { movesFromPgn, splitBroadcastPgn, START_FEN } from '../lib/chess';
+import { useStockfish } from '../hooks/useStockfish';
+import { movesFromPgn, scoreToWhitePerspective, splitBroadcastPgn, START_FEN } from '../lib/chess';
 import type { MoveStep } from '../lib/chess';
 
 export default function BroadcastGame() {
@@ -16,6 +19,7 @@ export default function BroadcastGame() {
   const [index, setIndex] = useState(-1);
   const [following, setFollowing] = useState(true);
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
+  const [engineOn, setEngineOn] = useState(false);
 
   const roundState = usePolling(() => getBroadcastRound(roundId), 5000, [roundId]);
   const pgnState = usePolling(() => getBroadcastRoundPgn(roundId), 5000, [roundId]);
@@ -49,15 +53,27 @@ export default function BroadcastGame() {
     return () => window.removeEventListener('keydown', onKey);
   }, [moves.length]);
 
+  const fen = index >= 0 ? (moves[index]?.fen ?? START_FEN) : (liveGame?.fen ?? START_FEN);
+
+  const stockfish = useStockfish(engineOn);
+  useEffect(() => {
+    if (!engineOn || !stockfish.ready) return;
+    const t = setTimeout(() => stockfish.analyze(fen, 16), 150);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fen, engineOn, stockfish.ready]);
+
   if (roundState.loading && !roundState.data) return <LoadingBlock label="Loading game…" />;
   if (roundState.error && !roundState.data) return <ErrorBlock message="Couldn't load this game." />;
   if (roundState.data && !liveGame) return <ErrorBlock message="This game wasn't found in the round." />;
 
-  const fen = index >= 0 ? (moves[index]?.fen ?? START_FEN) : (liveGame?.fen ?? START_FEN);
   const white = liveGame?.players[0];
   const black = liveGame?.players[1];
   const finished = liveGame?.status && liveGame.status !== '*';
   const whiteToMove = moves.length % 2 === 0;
+  const sideToMove = fen.split(' ')[1] === 'b' ? 'b' : 'w';
+  const topLine = stockfish.lines[0];
+  const persp = scoreToWhitePerspective(sideToMove, topLine?.scoreCp, topLine?.scoreMate);
 
   return (
     <div className="flex flex-col gap-6">
@@ -89,6 +105,14 @@ export default function BroadcastGame() {
             </button>
           )}
           <button
+            onClick={() => setEngineOn((v) => !v)}
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
+              engineOn ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-white/10 bg-white/5 text-ink-200 hover:bg-white/10'
+            }`}
+          >
+            <Cpu size={15} /> Engine
+          </button>
+          <button
             onClick={() => setOrientation((v) => (v === 'white' ? 'black' : 'white'))}
             className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-ink-200 hover:bg-white/10"
           >
@@ -98,47 +122,58 @@ export default function BroadcastGame() {
       </div>
 
       <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center">
-        <div className="flex flex-col items-center gap-3">
-          {(() => {
-            const info = { white, black };
-            const top = orientation === 'white' ? 'black' : 'white';
-            const bottom = orientation === 'white' ? 'white' : 'black';
-            return (
-              <>
-                <PlayerBadge
-                  color={top}
-                  name={info[top]?.name ?? '?'}
-                  title={info[top]?.title ?? null}
-                  rating={info[top]?.rating}
-                  clockSeconds={info[top]?.clock !== undefined ? info[top]!.clock! / 100 : undefined}
-                  active={!finished && (top === 'white' ? whiteToMove : !whiteToMove)}
-                />
-                <BoardPanel fen={fen} orientation={orientation} lastMoveUci={index >= 0 ? moves[index]?.uci : undefined} />
-                <PlayerBadge
-                  color={bottom}
-                  name={info[bottom]?.name ?? '?'}
-                  title={info[bottom]?.title ?? null}
-                  rating={info[bottom]?.rating}
-                  clockSeconds={info[bottom]?.clock !== undefined ? info[bottom]!.clock! / 100 : undefined}
-                  active={!finished && (bottom === 'white' ? whiteToMove : !whiteToMove)}
-                />
-              </>
-            );
-          })()}
-          {finished && <p className="text-sm font-semibold text-ink-300">{liveGame?.status}</p>}
+        <div className="flex items-start gap-3">
+          {engineOn && <EvalBar cp={persp.cp} mate={persp.mate} />}
+          <div className="flex flex-col items-center gap-3">
+            {(() => {
+              const info = { white, black };
+              const top = orientation === 'white' ? 'black' : 'white';
+              const bottom = orientation === 'white' ? 'white' : 'black';
+              return (
+                <>
+                  <PlayerBadge
+                    color={top}
+                    name={info[top]?.name ?? '?'}
+                    title={info[top]?.title ?? null}
+                    rating={info[top]?.rating}
+                    clockSeconds={info[top]?.clock !== undefined ? info[top]!.clock! / 100 : undefined}
+                    active={!finished && (top === 'white' ? whiteToMove : !whiteToMove)}
+                  />
+                  <BoardPanel
+                    fen={fen}
+                    orientation={orientation}
+                    lastMoveUci={index >= 0 ? moves[index]?.uci : undefined}
+                    bestMoveUci={engineOn ? stockfish.bestMoveUci : undefined}
+                  />
+                  <PlayerBadge
+                    color={bottom}
+                    name={info[bottom]?.name ?? '?'}
+                    title={info[bottom]?.title ?? null}
+                    rating={info[bottom]?.rating}
+                    clockSeconds={info[bottom]?.clock !== undefined ? info[bottom]!.clock! / 100 : undefined}
+                    active={!finished && (bottom === 'white' ? whiteToMove : !whiteToMove)}
+                  />
+                </>
+              );
+            })()}
+            {finished && <p className="text-sm font-semibold text-ink-300">{liveGame?.status}</p>}
+          </div>
         </div>
 
-        <div className="w-full max-w-sm rounded-2xl border border-white/8 bg-ink-850/60 p-3">
-          <h2 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-ink-400">Moves</h2>
-          <div className="h-[420px] overflow-y-auto">
-            <MoveList
-              moves={moves}
-              activeIndex={index}
-              onSelect={(i) => {
-                setFollowing(i === moves.length - 1);
-                setIndex(i);
-              }}
-            />
+        <div className="flex w-full max-w-sm flex-col gap-4">
+          {engineOn && <EngineLines fen={fen} lines={stockfish.lines} thinking={stockfish.thinking} ready={stockfish.ready} />}
+          <div className="rounded-2xl border border-white/8 bg-ink-850/60 p-3">
+            <h2 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-ink-400">Moves</h2>
+            <div className="h-[420px] overflow-y-auto">
+              <MoveList
+                moves={moves}
+                activeIndex={index}
+                onSelect={(i) => {
+                  setFollowing(i === moves.length - 1);
+                  setIndex(i);
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

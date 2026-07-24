@@ -88,7 +88,7 @@ export default function BroadcastTour() {
       {roundState.data && roundState.data.games.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {roundState.data.games.map((g) => (
-            <BroadcastGameCard key={g.id} game={g} />
+            <BroadcastGameCard key={g.id} game={g} roundId={roundId ?? ''} />
           ))}
         </div>
       )}

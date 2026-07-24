@@ -5,13 +5,20 @@ export interface MoveStep {
   san: string;
   moveNumber: number;
   color: 'w' | 'b';
+  /** UCI form (e.g. "e2e4"), for board square highlighting. */
+  uci?: string;
+}
+
+/** Strips PGN comments/annotations (e.g. `{ [%eval 0.2] [%clk 0:30:00] }`) that chess.js's parser rejects. */
+export function stripPgnComments(pgn: string): string {
+  return pgn.replace(/\{[^}]*\}/g, '');
 }
 
 /** Replays a PGN (or lichess space-separated UCI/SAN move list) into a list of FEN snapshots. */
 export function movesFromPgn(pgn: string): MoveStep[] {
   const chess = new Chess();
   try {
-    chess.loadPgn(pgn);
+    chess.loadPgn(stripPgnComments(pgn));
   } catch {
     return [];
   }
@@ -24,6 +31,7 @@ export function movesFromPgn(pgn: string): MoveStep[] {
       san: move.san,
       moveNumber: Math.floor(i / 2) + 1,
       color: move.color,
+      uci: move.lan,
     };
   });
 }
@@ -42,6 +50,19 @@ export function movesFromSan(sanMoves: string[]): MoveStep[] {
     });
   });
   return steps;
+}
+
+/** Splits a multi-game broadcast round PGN into individual games, keyed by the id at the end of each [GameURL] tag. */
+export function splitBroadcastPgn(text: string): Record<string, string> {
+  const blocks = text.split(/\n{2,}(?=\[Event )/).filter((b) => b.trim());
+  const byId: Record<string, string> = {};
+  for (const block of blocks) {
+    const match = block.match(/\[GameURL "([^"]+)"\]/);
+    if (!match) continue;
+    const id = match[1].split('/').filter(Boolean).pop();
+    if (id) byId[id] = block;
+  }
+  return byId;
 }
 
 export const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

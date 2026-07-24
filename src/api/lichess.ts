@@ -66,6 +66,12 @@ export function getBroadcastRound(roundId: string): Promise<LichessBroadcastRoun
   return getJson<LichessBroadcastRoundDetail>(`/api/broadcast/-/-/${encodeURIComponent(roundId)}`);
 }
 
+export async function getBroadcastRoundPgn(roundId: string): Promise<string> {
+  const res = await fetch(`${BASE}/api/broadcast/round/${encodeURIComponent(roundId)}.pgn`);
+  if (!res.ok) throw new Error(`Broadcast round PGN failed: ${res.status}`);
+  return res.text();
+}
+
 export async function getUserGames(username: string, max = 20): Promise<LichessGame[]> {
   const res = await fetch(
     `${BASE}/api/games/user/${encodeURIComponent(username)}?max=${max}&pgnInJson=true&opening=true&sort=dateDesc`,

@@ -12,6 +12,7 @@ import Tournaments from './pages/Tournaments';
 import TournamentDetail from './pages/TournamentDetail';
 import Broadcasts from './pages/Broadcasts';
 import BroadcastTour from './pages/BroadcastTour';
+import BroadcastGame from './pages/BroadcastGame';
 import Analysis from './pages/Analysis';
 import Openings from './pages/Openings';
 import Leaderboards from './pages/Leaderboards';
@@ -36,6 +37,7 @@ function App() {
           <Route path="/tournaments" element={<Tournaments />} />
           <Route path="/tournaments/:id" element={<TournamentDetail />} />
           <Route path="/broadcasts" element={<Broadcasts />} />
+          <Route path="/broadcasts/round/:roundId/:gameId" element={<BroadcastGame />} />
           <Route path="/broadcasts/:tourId" element={<BroadcastTour />} />
           <Route path="/analysis" element={<Analysis />} />
           <Route path="/openings" element={<Openings />} />

@@ -1,14 +1,18 @@
+import { Link } from 'react-router-dom';
 import { Chessboard } from 'react-chessboard';
 import type { LichessBroadcastGame } from '../types/lichess';
 import { formatClock } from '../lib/chess';
 
-export default function BroadcastGameCard({ game }: { game: LichessBroadcastGame }) {
+export default function BroadcastGameCard({ game, roundId }: { game: LichessBroadcastGame; roundId: string }) {
   const white = game.players[0];
   const black = game.players[1];
   const finished = game.status && game.status !== '*';
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-ink-850/60">
+    <Link
+      to={`/broadcasts/round/${roundId}/${game.id}`}
+      className="flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-ink-850/60 transition-all hover:border-gold-500/30 hover:bg-ink-850"
+    >
       <div className="flex items-center justify-between px-3 pt-3">
         <span className="truncate text-xs font-semibold text-ink-300">{game.name ?? `${white?.name} - ${black?.name}`}</span>
         {finished ? (
@@ -39,7 +43,7 @@ export default function BroadcastGameCard({ game }: { game: LichessBroadcastGame
         <PlayerRow player={black} />
         <PlayerRow player={white} />
       </div>
-    </div>
+    </Link>
   );
 }
 

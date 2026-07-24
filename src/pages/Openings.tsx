@@ -3,10 +3,12 @@ import { Chess } from 'chess.js';
 import { BookOpen, FlipVertical2, RotateCcw } from 'lucide-react';
 import BoardPanel from '../components/BoardPanel';
 import BookMoves from '../components/BookMoves';
+import OpeningSearch from '../components/OpeningSearch';
 import { useAsync } from '../hooks/useAsync';
 import { getOpeningExplorer } from '../api/explorer';
-import { START_FEN } from '../lib/chess';
+import { movesFromSan, START_FEN } from '../lib/chess';
 import type { MoveStep } from '../lib/chess';
+import type { OpeningDbEntry } from '../lib/openingsDb';
 
 export default function Openings() {
   const [moves, setMoves] = useState<MoveStep[]>([]);
@@ -71,6 +73,11 @@ export default function Openings() {
     setSelected(undefined);
   }
 
+  function selectFromDb(entry: OpeningDbEntry) {
+    setMoves(movesFromSan(entry.moves));
+    setSelected(undefined);
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -78,7 +85,7 @@ export default function Openings() {
           <h1 className="flex items-center gap-2 font-display text-xl font-semibold text-ink-100 sm:text-2xl">
             <BookOpen className="text-gold-400" /> Openings Explorer
           </h1>
-          <p className="mt-1 text-sm text-ink-400">Browse real Lichess games move by move to learn opening theory.</p>
+          <p className="mt-1 text-sm text-ink-400">Search 3,000+ named openings, or browse real Lichess games move by move to learn theory.</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -122,7 +129,8 @@ export default function Openings() {
           selectedSquare={selected}
           onSquareClick={handleSquareClick}
         />
-        <div className="w-full max-w-sm">
+        <div className="flex w-full max-w-sm flex-col gap-4">
+          <OpeningSearch onSelect={selectFromDb} />
           <BookMoves data={book.data} loading={book.loading} onPlay={playUci} minGames={0} />
           {!book.loading && book.data && book.data.moves.length === 0 && (
             <p className="rounded-2xl border border-white/8 bg-ink-850/50 p-4 text-center text-sm text-ink-400">

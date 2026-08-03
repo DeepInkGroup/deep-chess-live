@@ -13,7 +13,7 @@ export default function PipBoard() {
 }
 
 function PipInner({ target, onClose }: { target: NonNullable<ReturnType<typeof usePip>['target']>; onClose: () => void }) {
-  const { palette } = useBoardTheme();
+  const { palette, customPieces } = useBoardTheme();
   const channelGame = useTvChannelGame(target.kind === 'tv' ? target.channel : null);
   const gameStream = useGameStream(target.kind === 'game' ? target.gameId : null);
   const state = target.kind === 'tv' ? channelGame : gameStream;
@@ -43,6 +43,7 @@ function PipInner({ target, onClose }: { target: NonNullable<ReturnType<typeof u
           customBoardStyle={{ borderRadius: '6px' }}
           customDarkSquareStyle={{ backgroundColor: palette.dark }}
           customLightSquareStyle={{ backgroundColor: palette.light }}
+          customPieces={customPieces}
         />
       </div>
     </div>

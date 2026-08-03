@@ -1,8 +1,9 @@
 import { useParams, Link } from 'react-router-dom';
-import { ExternalLink, Users } from 'lucide-react';
+import { ExternalLink, Trophy, Users } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
-import { getTeam, getTeamMembers } from '../api/lichess';
+import { getTeam, getTeamArena, getTeamMembers } from '../api/lichess';
 import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
+import { timeAgo } from '../lib/chess';
 
 function stripMarkdown(text: string): string {
   return text
@@ -16,6 +17,7 @@ export default function TeamDetail() {
   const { teamId = '' } = useParams<{ teamId: string }>();
   const teamState = useAsync(() => getTeam(teamId), [teamId]);
   const membersState = useAsync(() => getTeamMembers(teamId, 30), [teamId]);
+  const arenaState = useAsync(() => getTeamArena(teamId, 10), [teamId]);
 
   if (teamState.loading) return <LoadingBlock label="Loading team…" />;
   if (teamState.error || !teamState.data) return <ErrorBlock message="Couldn't load this team." />;
@@ -43,6 +45,37 @@ export default function TeamDetail() {
         </div>
         {team.description && <p className="mt-4 whitespace-pre-line text-sm text-ink-300">{stripMarkdown(team.description).slice(0, 600)}</p>}
       </div>
+
+      <section>
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-ink-400">
+          <Trophy size={16} className="text-gold-400" /> Recent activity
+        </h2>
+        {arenaState.loading && <LoadingBlock label="Loading recent tournaments…" />}
+        {arenaState.data && arenaState.data.length === 0 && (
+          <p className="rounded-xl border border-white/8 bg-ink-850/50 p-4 text-sm text-ink-400">No recent tournaments from this team.</p>
+        )}
+        {arenaState.data && arenaState.data.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {arenaState.data.map((t) => (
+              <a
+                key={t.id}
+                href={`https://lichess.org/tournament/${t.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-between gap-3 rounded-xl border border-white/8 bg-ink-850/50 px-4 py-3 text-sm transition-colors hover:border-gold-500/30"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-ink-100">{t.fullName}</p>
+                  <p className="text-xs text-ink-500">
+                    {t.nbPlayers} players{t.winner ? ` · won by ${t.winner.name}` : ''}
+                  </p>
+                </div>
+                <span className="shrink-0 text-xs text-ink-500">{timeAgo(t.finishesAt ?? t.startsAt)}</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section>
         <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-ink-400">

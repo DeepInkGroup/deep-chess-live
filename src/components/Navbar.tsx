@@ -22,6 +22,8 @@ const moreLinks = [
   { to: '/repertoire', label: 'Repertoire trainer' },
   { to: '/tournaments/calendar', label: "Today's schedule" },
   { to: '/dashboard', label: 'Dashboard' },
+  { to: '/streamers', label: 'Streamers' },
+  { to: '/leaderboards/country', label: 'Country leaderboard' },
 ];
 
 const allLinks = [...primaryLinks, ...moreLinks];

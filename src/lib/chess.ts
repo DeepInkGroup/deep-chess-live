@@ -69,6 +69,18 @@ export function splitBroadcastPgn(text: string): Record<string, string> {
 
 export const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
+/** Builds a PGN string by replaying SAN moves from a starting position (which may differ from the standard start). */
+export function movesToPgn(basePosition: string, moves: MoveStep[]): string {
+  const chess = new Chess();
+  if (basePosition !== START_FEN) {
+    chess.load(basePosition);
+  }
+  for (const step of moves) {
+    chess.move(step.san);
+  }
+  return chess.pgn();
+}
+
 /**
  * Lichess puzzle responses don't always include `fen`/`lastMove` directly (e.g. /api/puzzle/next).
  * When missing, derive them by replaying the source game's PGN up to and including `initialPly`.

@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import PipBoard from './components/PipBoard';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
+import TournamentReminders from './components/TournamentReminders';
 import Home from './pages/Home';
 import LiveTv from './pages/LiveTv';
 import Watch from './pages/Watch';
@@ -27,6 +28,8 @@ import TeamDetail from './pages/TeamDetail';
 import MultiWatch from './pages/MultiWatch';
 import RepertoireTrainer from './pages/RepertoireTrainer';
 import TournamentCalendar from './pages/TournamentCalendar';
+import Streamers from './pages/Streamers';
+import CountryLeaderboard from './pages/CountryLeaderboard';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -53,6 +56,8 @@ function App() {
           <Route path="/teams/:teamId" element={<TeamDetail />} />
           <Route path="/tournaments" element={<Tournaments />} />
           <Route path="/tournaments/calendar" element={<TournamentCalendar />} />
+          <Route path="/streamers" element={<Streamers />} />
+          <Route path="/leaderboards/country" element={<CountryLeaderboard />} />
           <Route path="/tournaments/:id" element={<TournamentDetail />} />
           <Route path="/repertoire" element={<RepertoireTrainer />} />
           <Route path="/broadcasts" element={<Broadcasts />} />
@@ -67,6 +72,7 @@ function App() {
       <Footer />
       <PipBoard />
       <KeyboardShortcuts />
+      <TournamentReminders />
     </>
   );
 }

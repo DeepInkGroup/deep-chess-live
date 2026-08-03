@@ -1,17 +1,31 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Flame, PuzzleIcon, Target, Zap } from 'lucide-react';
+import { Flame, PuzzleIcon, Shuffle, Target, Zap } from 'lucide-react';
 import PuzzleBoard from '../components/PuzzleBoard';
 import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
 import { useAsync } from '../hooks/useAsync';
-import { getDailyPuzzle } from '../api/lichess';
+import { getDailyPuzzle, getNextPuzzle } from '../api/lichess';
 import { getDailyPuzzle as getChessComDailyPuzzle } from '../api/chesscom';
 import { chessComPuzzleToPuzzleShape } from '../lib/chess';
 import { getPuzzleStats, recordPuzzleResult } from '../lib/puzzleHistory';
 
+const THEMES = [
+  { key: '', label: 'Daily puzzle' },
+  { key: 'fork', label: 'Fork' },
+  { key: 'pin', label: 'Pin' },
+  { key: 'skewer', label: 'Skewer' },
+  { key: 'sacrifice', label: 'Sacrifice' },
+  { key: 'mateIn2', label: 'Mate in 2' },
+  { key: 'endgame', label: 'Endgame' },
+  { key: 'hangingPiece', label: 'Hanging piece' },
+  { key: 'deflection', label: 'Deflection' },
+];
+
 export default function Puzzle() {
   const [source, setSource] = useState<'lichess' | 'chesscom'>('lichess');
-  const lichessPuzzle = useAsync(() => getDailyPuzzle(), []);
+  const [theme, setTheme] = useState('');
+  const [nonce, setNonce] = useState(0);
+  const lichessPuzzle = useAsync(() => (theme ? getNextPuzzle(theme) : getDailyPuzzle()), [theme, nonce]);
   const chessComPuzzle = useAsync(() => getChessComDailyPuzzle(), []);
   const [stats, setStats] = useState(() => getPuzzleStats());
 
@@ -23,6 +37,7 @@ export default function Puzzle() {
     if (!data) return;
     recordPuzzleResult({ id: data.puzzle.id, rating: data.puzzle.rating, solved: true });
     setStats(getPuzzleStats());
+    if (source === 'lichess' && theme) setTimeout(() => setNonce((n) => n + 1), 500);
   }
 
   return (
@@ -56,6 +71,30 @@ export default function Puzzle() {
           Chess.com
         </button>
       </div>
+
+      {source === 'lichess' && (
+        <div className="flex items-center gap-2">
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-ink-200 focus:outline-none focus:ring-1 focus:ring-gold-500/50"
+          >
+            {THEMES.map((t) => (
+              <option key={t.key} value={t.key} className="bg-ink-900">
+                {t.label}
+              </option>
+            ))}
+          </select>
+          {theme && (
+            <button
+              onClick={() => setNonce((n) => n + 1)}
+              className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-ink-200 hover:bg-white/10"
+            >
+              <Shuffle size={14} /> New puzzle
+            </button>
+          )}
+        </div>
+      )}
 
       {loading && <LoadingBlock label="Fetching today's puzzle…" />}
       {(error || (!loading && !data)) && <ErrorBlock message="Couldn't load this puzzle." />}

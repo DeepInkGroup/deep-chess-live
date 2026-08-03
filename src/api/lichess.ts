@@ -7,9 +7,11 @@ import type {
   LichessLeaderboard,
   LichessPuzzle,
   LichessRatingHistoryEntry,
+  LichessStreamer,
   LichessTeam,
   LichessTeamMember,
   LichessTeamSearchResult,
+  LichessTournament,
   LichessTournamentDetail,
   LichessTournamentsOverview,
   LichessTvChannels,
@@ -37,8 +39,9 @@ export function getDailyPuzzle(): Promise<LichessPuzzle> {
   return getJson<LichessPuzzle>('/api/puzzle/daily');
 }
 
-export function getNextPuzzle(): Promise<LichessPuzzle> {
-  return getJson<LichessPuzzle>('/api/puzzle/next');
+export function getNextPuzzle(angle?: string): Promise<LichessPuzzle> {
+  const query = angle ? `?angle=${encodeURIComponent(angle)}` : '';
+  return getJson<LichessPuzzle>(`/api/puzzle/next${query}`);
 }
 
 export function getRatingHistory(username: string): Promise<LichessRatingHistoryEntry[]> {
@@ -138,6 +141,23 @@ export function streamTvChannelFeed(channel: string, onEvent: (evt: LichessTvFee
 
 export function streamGame(gameId: string, onEvent: (evt: LichessGameStreamEvent) => void, onError?: (err: unknown) => void) {
   return streamNdjson<LichessGameStreamEvent>(`/api/stream/game/${gameId}`, onEvent, onError);
+}
+
+export function getLiveStreamers(): Promise<LichessStreamer[]> {
+  return getJson<LichessStreamer[]>('/api/streamer/live');
+}
+
+/** Arena tournaments organized by or associated with a team, newest first. Used as a proxy "team activity feed". */
+export async function getTeamArena(teamId: string, max = 10): Promise<LichessTournament[]> {
+  const res = await fetch(`${BASE}/api/team/${encodeURIComponent(teamId)}/arena?max=${max}`, {
+    headers: { Accept: 'application/x-ndjson' },
+  });
+  if (!res.ok) throw new Error(`Team arena fetch failed: ${res.status}`);
+  const text = await res.text();
+  return text
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line) as LichessTournament);
 }
 
 export function searchTeams(query: string, page = 1): Promise<LichessTeamSearchResult> {

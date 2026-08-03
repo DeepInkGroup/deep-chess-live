@@ -1,11 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Calendar, Circle, ExternalLink, LineChart, Star, Trophy } from 'lucide-react';
+import { BookOpen, Calendar, Circle, ExternalLink, LineChart, Star, Trophy } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
 import * as lichess from '../api/lichess';
 import * as chesscom from '../api/chesscom';
+import { getPlayerOpeningExplorer } from '../api/explorer';
 import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
 import RatingChart from '../components/RatingChart';
+import BookMoves from '../components/BookMoves';
 import { isFavorite, toggleFavorite } from '../lib/favorites';
 import type { LichessGame } from '../types/lichess';
 import type { ChessComGame, ChessComStats } from '../types/chesscom';
@@ -118,6 +120,8 @@ export default function PlayerProfile() {
 
       {lichessData && <RatingHistorySection username={username} />}
 
+      {lichessData && !lichessData.user.disabled && <MostPlayedOpeningsSection username={username} />}
+
       {chesscomData && (
         <StatsSection title="Chess.com ratings" icon={<Trophy size={16} className="text-gold-400" />}>
           {(['chess_bullet', 'chess_blitz', 'chess_rapid', 'chess_daily'] as const).map((key) => {
@@ -193,6 +197,27 @@ function RatingHistorySection({ username }: { username: string }) {
           ))}
         </div>
         <RatingChart points={active.points} />
+      </div>
+    </section>
+  );
+}
+
+function MostPlayedOpeningsSection({ username }: { username: string }) {
+  const white = useAsync(() => getPlayerOpeningExplorer(username, 'white'), [username]);
+  const black = useAsync(() => getPlayerOpeningExplorer(username, 'black'), [username]);
+
+  const whiteEmpty = !white.loading && (!white.data || white.data.moves.length === 0);
+  const blackEmpty = !black.loading && (!black.data || black.data.moves.length === 0);
+  if (whiteEmpty && blackEmpty) return null;
+
+  return (
+    <section>
+      <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-ink-400">
+        <BookOpen size={16} className="text-gold-400" /> Most played openings
+      </h2>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <BookMoves data={white.data} loading={white.loading} minGames={1} title="As White" />
+        <BookMoves data={black.data} loading={black.loading} minGames={1} title="As Black" />
       </div>
     </section>
   );

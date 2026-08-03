@@ -66,7 +66,7 @@ interface BoardEditorProps {
 }
 
 export default function BoardEditor({ initialFen, onDone, onCancel }: BoardEditorProps) {
-  const { palette } = useBoardTheme();
+  const { palette, customPieces } = useBoardTheme();
   const [position, setPosition] = useState<Position>(() => fenToPosition(initialFen ?? START_FEN));
   const [turn, setTurn] = useState<'w' | 'b'>(initialFen ? (initialFen.split(' ')[1] === 'b' ? 'b' : 'w') : 'w');
   const [armed, setArmed] = useState<PieceCode | null>(null);
@@ -123,6 +123,7 @@ export default function BoardEditor({ initialFen, onDone, onCancel }: BoardEdito
           customBoardStyle={{ borderRadius: '10px' }}
           customDarkSquareStyle={{ backgroundColor: palette.dark }}
           customLightSquareStyle={{ backgroundColor: palette.light }}
+          customPieces={customPieces}
           onSquareClick={handleSquareClick}
         />
       </div>

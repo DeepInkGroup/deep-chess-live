@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Chess } from 'chess.js';
-import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Copy, FlipVertical2, RotateCcw, Target, Upload, Wrench } from 'lucide-react';
+import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Copy, Download, FlipVertical2, RotateCcw, Target, Upload, Wrench } from 'lucide-react';
 import BoardPanel from '../components/BoardPanel';
 import BoardEditor from '../components/BoardEditor';
 import EvalBar from '../components/EvalBar';
@@ -12,7 +12,7 @@ import type { EngineSettingsValue } from '../components/EngineSettings';
 import { useStockfish } from '../hooks/useStockfish';
 import { useAsync } from '../hooks/useAsync';
 import { getOpeningExplorer } from '../api/explorer';
-import { movesFromPgn, scoreToWhitePerspective, START_FEN } from '../lib/chess';
+import { movesFromPgn, movesToPgn, scoreToWhitePerspective, START_FEN } from '../lib/chess';
 import type { MoveStep } from '../lib/chess';
 
 export default function Analysis() {
@@ -143,6 +143,17 @@ export default function Analysis() {
     setTimeout(() => setCopied(false), 1200);
   }
 
+  function downloadPgn() {
+    const pgn = movesToPgn(basePosition, moves);
+    const blob = new Blob([pgn], { type: 'application/x-chess-pgn' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analysis.pgn';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const sideToMove = fen.split(' ')[1] === 'b' ? 'b' : 'w';
   const topLine = stockfish.lines[0];
   const persp = scoreToWhitePerspective(sideToMove, topLine?.scoreCp, topLine?.scoreMate);
@@ -259,6 +270,13 @@ export default function Analysis() {
                 className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 text-xs text-ink-200 hover:bg-white/10"
               >
                 <Copy size={12} /> {copied ? 'Copied!' : 'FEN'}
+              </button>
+              <button
+                onClick={downloadPgn}
+                disabled={moves.length === 0}
+                className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 text-xs text-ink-200 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5"
+              >
+                <Download size={12} /> PGN
               </button>
             </div>
           </div>

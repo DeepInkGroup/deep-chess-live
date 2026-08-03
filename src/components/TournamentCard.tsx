@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Swords, Users } from 'lucide-react';
+import { Bell, BellRing, Swords, Users } from 'lucide-react';
 import type { LichessTournament } from '../types/lichess';
 import { formatClockControl, timeUntil } from '../lib/chess';
+import { isReminded, toggleReminder } from '../lib/reminders';
 
 const VARIANT_ICONS: Record<string, string> = {
   bullet: '🚀',
@@ -22,6 +24,16 @@ const VARIANT_ICONS: Record<string, string> = {
 export default function TournamentCard({ tournament }: { tournament: LichessTournament }) {
   const isLive = tournament.status === 20;
   const isFinished = tournament.status === 30;
+  const [reminded, setReminded] = useState(() => isReminded(tournament.id));
+
+  function handleRemindClick(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!reminded && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    setReminded(toggleReminder({ id: tournament.id, fullName: tournament.fullName, startsAt: tournament.startsAt }));
+  }
 
   return (
     <Link
@@ -33,6 +45,15 @@ export default function TournamentCard({ tournament }: { tournament: LichessTour
           <span className="mr-1.5">{VARIANT_ICONS[tournament.perf.key] ?? '♟️'}</span>
           {tournament.fullName}
         </p>
+        {!isLive && !isFinished && (
+          <button
+            onClick={handleRemindClick}
+            aria-label={reminded ? 'Remove reminder' : 'Remind me before this starts'}
+            className={`shrink-0 rounded-md p-1 transition-colors ${reminded ? 'text-gold-400' : 'text-ink-500 hover:text-ink-200'}`}
+          >
+            {reminded ? <BellRing size={14} /> : <Bell size={14} />}
+          </button>
+        )}
         {isLive && (
           <span className="flex shrink-0 items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400">
             <span className="h-1.5 w-1.5 animate-pulse-live rounded-full bg-emerald-400" /> Live

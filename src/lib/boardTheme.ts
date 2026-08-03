@@ -14,6 +14,7 @@ export const BOARD_PALETTES: BoardPalette[] = [
 ];
 
 const KEY = 'deepchess.boardTheme.v1';
+const PIECE_SET_KEY = 'deepchess.pieceSet.v1';
 
 export function getStoredPaletteId(): string {
   try {
@@ -33,4 +34,20 @@ export function setStoredPaletteId(id: string) {
 
 export function getPalette(id: string): BoardPalette {
   return BOARD_PALETTES.find((p) => p.id === id) ?? BOARD_PALETTES[0];
+}
+
+export function getStoredPieceSetId(): string {
+  try {
+    return localStorage.getItem(PIECE_SET_KEY) ?? 'classic';
+  } catch {
+    return 'classic';
+  }
+}
+
+export function setStoredPieceSetId(id: string) {
+  try {
+    localStorage.setItem(PIECE_SET_KEY, id);
+  } catch {
+    /* localStorage unavailable */
+  }
 }

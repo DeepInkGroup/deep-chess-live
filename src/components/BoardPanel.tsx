@@ -26,7 +26,7 @@ export default function BoardPanel({
   bestMoveUci,
 }: BoardPanelProps) {
   const [width, setWidth] = useState(size ?? 480);
-  const { palette } = useBoardTheme();
+  const { palette, customPieces } = useBoardTheme();
 
   useEffect(() => {
     if (size) {
@@ -70,6 +70,7 @@ export default function BoardPanel({
         customBoardStyle={{ borderRadius: '10px' }}
         customDarkSquareStyle={{ backgroundColor: palette.dark }}
         customLightSquareStyle={{ backgroundColor: palette.light }}
+        customPieces={customPieces}
         onPieceDrop={(from, to) => (onDrop ? onDrop(from, to) : false)}
         onSquareClick={(square) => onSquareClick?.(square)}
       />

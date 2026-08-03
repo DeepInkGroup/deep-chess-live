@@ -5,6 +5,7 @@ import { getPuzzleStats, getRecentPuzzles } from '../lib/puzzleHistory';
 import { getFavorites, removeFavorite } from '../lib/favorites';
 import { timeAgo, START_FEN } from '../lib/chess';
 import { BOARD_PALETTES } from '../lib/boardTheme';
+import { PIECE_SETS } from '../lib/pieceSets';
 import { useBoardTheme } from '../contexts/BoardThemeContext';
 import BoardPanel from '../components/BoardPanel';
 import type { FavoritePlayer } from '../lib/favorites';
@@ -13,7 +14,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(() => getPuzzleStats());
   const [recent] = useState(() => getRecentPuzzles(8));
   const [favorites, setFavorites] = useState<FavoritePlayer[]>([]);
-  const { paletteId, setPaletteId } = useBoardTheme();
+  const { paletteId, setPaletteId, pieceSetId, setPieceSetId } = useBoardTheme();
 
   useEffect(() => {
     setFavorites(getFavorites());
@@ -120,6 +121,20 @@ export default function Dashboard() {
               </button>
             ))}
           </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {PIECE_SETS.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setPieceSetId(s.id)}
+              className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                pieceSetId === s.id ? 'border-gold-500/40 bg-gold-500/10 text-gold-300' : 'border-white/10 bg-white/5 text-ink-200 hover:bg-white/10'
+              }`}
+            >
+              {s.label}
+              {pieceSetId === s.id && <Check size={13} />}
+            </button>
+          ))}
         </div>
       </section>
     </div>

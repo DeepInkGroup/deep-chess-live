@@ -350,6 +350,15 @@ export interface LichessTeamSearchResult {
   nbPages: number;
 }
 
+export interface LichessStreamer {
+  id: string;
+  name: string;
+  title?: string;
+  patron?: boolean;
+  stream?: { service: string; status: string; lang: string };
+  streamer?: { name: string; headline?: string; description?: string; twitch?: string; youTube?: string; image?: string };
+}
+
 export interface LichessTeamMember {
   name: string;
   id: string;

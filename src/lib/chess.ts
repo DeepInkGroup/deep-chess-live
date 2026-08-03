@@ -1,4 +1,6 @@
 import { Chess } from 'chess.js';
+import type { ChessComPuzzle } from '../types/chesscom';
+import type { LichessPuzzle } from '../types/lichess';
 
 export interface MoveStep {
   fen: string;
@@ -191,4 +193,95 @@ export function evalToBarPercent(cp?: number, mate?: number): number {
   if (cp === undefined) return 50;
   const clamped = Math.max(-1000, Math.min(1000, cp));
   return 50 + (clamped / 1000) * 50;
+}
+
+/** Chess.com's daily puzzle is a single position + one solving move; adapt it to the shape PuzzleBoard expects. */
+export function chessComPuzzleToPuzzleShape(p: ChessComPuzzle): LichessPuzzle | null {
+  const chess = new Chess();
+  try {
+    chess.load(p.fen);
+  } catch {
+    return null;
+  }
+
+  const moveMatch = stripPgnComments(p.pgn)
+    .replace(/\[[^\]]*\]/g, '')
+    .trim()
+    .match(/\d+\.\s*(\S+)/);
+  const san = moveMatch?.[1];
+  if (!san) return null;
+
+  let move;
+  try {
+    move = chess.move(san);
+  } catch {
+    return null;
+  }
+  if (!move) return null;
+
+  return {
+    game: {
+      id: `chesscom-${p.publish_time}`,
+      perf: { key: 'daily', name: 'Daily' },
+      rated: false,
+      players: [],
+      pgn: '',
+    },
+    puzzle: {
+      id: `chesscom-${p.publish_time}`,
+      rating: 0,
+      plays: 0,
+      solution: [move.lan],
+      themes: ['mate'],
+      initialPly: 0,
+      fen: p.fen,
+    },
+  };
+}
+
+/**
+ * Adapts a saved repertoire line (SAN moves from the start position, for one color) into the
+ * puzzle shape PuzzleBoard expects. PuzzleBoard always has the solver play solution[0], solution[2]...
+ * so for a black repertoire we fast-forward past White's first move and start the "puzzle" there.
+ */
+export function repertoireToPuzzleShape(moves: string[], color: 'white' | 'black'): LichessPuzzle | null {
+  const chess = new Chess();
+  const uci: string[] = [];
+  for (const san of moves) {
+    let move;
+    try {
+      move = chess.move(san);
+    } catch {
+      return null;
+    }
+    if (!move) return null;
+    uci.push(move.lan);
+  }
+  if (uci.length === 0) return null;
+
+  const base = {
+    game: { id: 'repertoire', perf: { key: 'repertoire', name: 'Repertoire' }, rated: false, players: [] as never[], pgn: '' },
+  };
+
+  if (color === 'white') {
+    return { ...base, puzzle: { id: 'repertoire', rating: 0, plays: 0, solution: uci, themes: ['repertoire'], initialPly: 0, fen: START_FEN } };
+  }
+
+  if (uci.length < 2) return null;
+  const replay = new Chess();
+  const firstMove = applyUci(replay, uci[0]);
+  if (!firstMove) return null;
+  return {
+    ...base,
+    puzzle: {
+      id: 'repertoire',
+      rating: 0,
+      plays: 0,
+      solution: uci.slice(1),
+      themes: ['repertoire'],
+      initialPly: 0,
+      fen: replay.fen(),
+      lastMove: uci[0],
+    },
+  };
 }

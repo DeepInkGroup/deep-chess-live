@@ -1,11 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { Calendar, Circle, ExternalLink, LineChart, Trophy } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Calendar, Circle, ExternalLink, LineChart, Star, Trophy } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
 import * as lichess from '../api/lichess';
 import * as chesscom from '../api/chesscom';
 import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
 import RatingChart from '../components/RatingChart';
+import { isFavorite, toggleFavorite } from '../lib/favorites';
 import type { LichessGame } from '../types/lichess';
 import type { ChessComGame, ChessComStats } from '../types/chesscom';
 import { timeAgo } from '../lib/chess';
@@ -35,11 +36,17 @@ async function loadProfile(username: string) {
 export default function PlayerProfile() {
   const { username = '' } = useParams<{ username: string }>();
   const { data, loading, error } = useAsync(() => loadProfile(username), [username]);
+  const [favorite, setFavorite] = useState(false);
+
+  useEffect(() => {
+    setFavorite(isFavorite(username));
+  }, [username]);
 
   if (loading) return <LoadingBlock label={`Looking up ${username}…`} />;
   if (error || !data) return <ErrorBlock message={error?.message ?? 'Player not found.'} />;
 
   const { lichessData, chesscomData } = data;
+  const displayTitle = lichessData?.user.title ?? chesscomData?.profile.title ?? null;
 
   return (
     <div className="flex flex-col gap-8">
@@ -63,9 +70,19 @@ export default function PlayerProfile() {
                 <Circle size={7} className="fill-current" /> Online on Lichess
               </span>
             )}
+            {lichessData?.user.disabled && <span className="ml-2 text-ruby-400">Closed Lichess account</span>}
           </p>
         </div>
         <div className="ml-auto flex gap-2">
+          <button
+            onClick={() => setFavorite(toggleFavorite(username, displayTitle))}
+            aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+              favorite ? 'border-gold-500/30 bg-gold-500/10 text-gold-400' : 'border-white/10 bg-white/5 text-ink-200 hover:bg-white/10'
+            }`}
+          >
+            <Star size={13} className={favorite ? 'fill-current' : ''} /> {favorite ? 'Favorited' : 'Favorite'}
+          </button>
           {lichessData && (
             <a
               href={`https://lichess.org/@/${username}`}
@@ -92,7 +109,7 @@ export default function PlayerProfile() {
       {lichessData && (
         <StatsSection title="Lichess ratings" icon={<Trophy size={16} className="text-gold-400" />}>
           {LICHESS_PERFS.map((perf) => {
-            const stat = lichessData.user.perfs[perf];
+            const stat = lichessData.user.perfs?.[perf];
             if (!stat || stat.games === 0) return null;
             return <StatCard key={perf} label={perf} rating={stat.rating} sub={`${stat.games} games`} />;
           })}
@@ -109,6 +126,9 @@ export default function PlayerProfile() {
             const label = key.replace('chess_', '');
             return <StatCard key={key} label={label} rating={bucket.last.rating} sub={bucket.record ? `${bucket.record.win}W ${bucket.record.loss}L ${bucket.record.draw}D` : undefined} />;
           })}
+          {chesscomData.stats.fide !== undefined && chesscomData.stats.fide > 0 && (
+            <StatCard label="FIDE" rating={chesscomData.stats.fide} sub="via Chess.com" />
+          )}
         </StatsSection>
       )}
 

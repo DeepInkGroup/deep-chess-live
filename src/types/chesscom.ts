@@ -54,3 +54,12 @@ export interface ChessComGame {
 export interface ChessComArchiveGames {
   games: ChessComGame[];
 }
+
+export interface ChessComPuzzle {
+  title: string;
+  url: string;
+  publish_time: number;
+  fen: string;
+  pgn: string;
+  image: string;
+}

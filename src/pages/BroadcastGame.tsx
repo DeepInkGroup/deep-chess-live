@@ -10,6 +10,8 @@ import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
 import { usePolling } from '../hooks/useAsync';
 import { getBroadcastRound, getBroadcastRoundPgn } from '../api/lichess';
 import { useStockfish } from '../hooks/useStockfish';
+import { useMoveSound } from '../hooks/useMoveSound';
+import SoundToggle from '../components/SoundToggle';
 import { movesFromPgn, scoreToWhitePerspective, splitBroadcastPgn, START_FEN } from '../lib/chess';
 import type { MoveStep } from '../lib/chess';
 
@@ -63,6 +65,8 @@ export default function BroadcastGame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fen, engineOn, stockfish.ready]);
 
+  useMoveSound(moves);
+
   if (roundState.loading && !roundState.data) return <LoadingBlock label="Loading game…" />;
   if (roundState.error && !roundState.data) return <ErrorBlock message="Couldn't load this game." />;
   if (roundState.data && !liveGame) return <ErrorBlock message="This game wasn't found in the round." />;
@@ -93,6 +97,7 @@ export default function BroadcastGame() {
           </h1>
         </div>
         <div className="flex gap-2">
+          <SoundToggle />
           {!following && (
             <button
               onClick={() => {

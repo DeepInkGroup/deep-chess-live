@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Cpu, FlipVertical2 } from 'lucide-react';
+import { Cpu, FlipVertical2, PictureInPicture2 } from 'lucide-react';
+import { usePip } from '../contexts/PipContext';
 import BoardPanel from '../components/BoardPanel';
 import PlayerBadge from '../components/PlayerBadge';
 import MoveList from '../components/MoveList';
 import EvalBar from '../components/EvalBar';
 import EngineLines from '../components/EngineLines';
+import SoundToggle from '../components/SoundToggle';
 import { useTvChannelGame, useGameStream } from '../hooks/useLiveGame';
 import { useStockfish } from '../hooks/useStockfish';
+import { useMoveSound } from '../hooks/useMoveSound';
 import { channelLabel } from '../components/TvChannelCard';
 import { LoadingBlock } from '../components/StatusViews';
 import { scoreToWhitePerspective } from '../lib/chess';
@@ -16,6 +19,7 @@ export default function Watch() {
   const { channel, gameId } = useParams<{ channel?: string; gameId?: string }>();
   const [flipped, setFlipped] = useState(false);
   const [engineOn, setEngineOn] = useState(false);
+  const { openPip } = usePip();
 
   const channelGame = useTvChannelGame(channel ?? null);
   const singleGame = useGameStream(gameId ?? null);
@@ -40,6 +44,8 @@ export default function Watch() {
   const topLine = stockfish.lines[0];
   const persp = scoreToWhitePerspective(sideToMove, topLine?.scoreCp, topLine?.scoreMate);
 
+  useMoveSound(state.moves);
+
   if (state.status === 'connecting') {
     return <LoadingBlock label="Connecting to the game feed…" />;
   }
@@ -52,6 +58,7 @@ export default function Watch() {
           {state.status === 'error' && <p className="mt-1 text-sm text-ruby-400">Connection lost. Trying to display last known position.</p>}
         </div>
         <div className="flex gap-2">
+          <SoundToggle />
           <button
             onClick={() => setEngineOn((v) => !v)}
             className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
@@ -65,6 +72,18 @@ export default function Watch() {
             className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-ink-200 hover:bg-white/10"
           >
             <FlipVertical2 size={15} /> Flip
+          </button>
+          <button
+            onClick={() =>
+              openPip(
+                channel
+                  ? { kind: 'tv', channel, label: title }
+                  : { kind: 'game', gameId: gameId ?? '', label: title },
+              )
+            }
+            className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-ink-200 hover:bg-white/10"
+          >
+            <PictureInPicture2 size={15} /> Pop out
           </button>
         </div>
       </div>

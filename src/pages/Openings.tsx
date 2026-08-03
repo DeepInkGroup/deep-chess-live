@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Chess } from 'chess.js';
-import { BookOpen, FlipVertical2, RotateCcw } from 'lucide-react';
+import { BookMarked, BookOpen, FlipVertical2, RotateCcw } from 'lucide-react';
 import BoardPanel from '../components/BoardPanel';
 import BookMoves from '../components/BookMoves';
 import OpeningSearch from '../components/OpeningSearch';
 import { useAsync } from '../hooks/useAsync';
 import { getOpeningExplorer } from '../api/explorer';
 import { movesFromSan, START_FEN } from '../lib/chess';
+import { addRepertoireEntry } from '../lib/repertoire';
 import type { MoveStep } from '../lib/chess';
 import type { OpeningDbEntry } from '../lib/openingsDb';
 
@@ -14,6 +15,11 @@ export default function Openings() {
   const [moves, setMoves] = useState<MoveStep[]>([]);
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [selected, setSelected] = useState<string | undefined>(undefined);
+  const [openingName, setOpeningName] = useState('');
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [saveColor, setSaveColor] = useState<'white' | 'black'>('white');
+  const [saveName, setSaveName] = useState('');
+  const [saved, setSaved] = useState(false);
 
   const fen = moves.length ? moves[moves.length - 1].fen : START_FEN;
   const book = useAsync(() => getOpeningExplorer(fen), [fen]);
@@ -66,6 +72,7 @@ export default function Openings() {
   function reset() {
     setMoves([]);
     setSelected(undefined);
+    setOpeningName('');
   }
 
   function jumpTo(index: number) {
@@ -76,6 +83,20 @@ export default function Openings() {
   function selectFromDb(entry: OpeningDbEntry) {
     setMoves(movesFromSan(entry.moves));
     setSelected(undefined);
+    setOpeningName(entry.name);
+  }
+
+  function openSaveDialog() {
+    setSaveName(openingName || 'My line');
+    setSaveOpen(true);
+    setSaved(false);
+  }
+
+  function confirmSave() {
+    if (!saveName.trim() || moves.length === 0) return;
+    addRepertoireEntry(saveName.trim(), moves.map((m) => m.san), saveColor);
+    setSaved(true);
+    setTimeout(() => setSaveOpen(false), 900);
   }
 
   return (
@@ -100,8 +121,50 @@ export default function Openings() {
           >
             <FlipVertical2 size={15} /> Flip
           </button>
+          {moves.length > 0 && (
+            <button
+              onClick={openSaveDialog}
+              className="flex items-center gap-1.5 rounded-lg border border-gold-500/30 bg-gold-500/10 px-3 py-1.5 text-sm text-gold-400 hover:bg-gold-500/20"
+            >
+              <BookMarked size={15} /> Save to repertoire
+            </button>
+          )}
         </div>
       </div>
+
+      {saveOpen && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-white/8 bg-ink-850/60 p-4">
+          <input
+            value={saveName}
+            onChange={(e) => setSaveName(e.target.value)}
+            placeholder="Line name…"
+            className="rounded-lg border border-white/10 bg-ink-950/60 px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 focus:outline-none focus:ring-1 focus:ring-gold-500/50"
+          />
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-ink-400">I'm playing:</span>
+            <button
+              onClick={() => setSaveColor('white')}
+              className={`rounded-lg px-3 py-1 text-xs font-medium ${saveColor === 'white' ? 'bg-gold-500 text-ink-950' : 'bg-white/5 text-ink-300'}`}
+            >
+              White
+            </button>
+            <button
+              onClick={() => setSaveColor('black')}
+              className={`rounded-lg px-3 py-1 text-xs font-medium ${saveColor === 'black' ? 'bg-gold-500 text-ink-950' : 'bg-white/5 text-ink-300'}`}
+            >
+              Black
+            </button>
+          </div>
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setSaveOpen(false)} className="rounded-lg px-3 py-1.5 text-sm text-ink-400 hover:text-ink-200">
+              Cancel
+            </button>
+            <button onClick={confirmSave} className="rounded-lg bg-gold-500 px-4 py-1.5 text-sm font-semibold text-ink-950 hover:bg-gold-400">
+              {saved ? 'Saved!' : 'Save'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {moves.length > 0 && (
         <div className="flex flex-wrap items-center gap-1 rounded-xl border border-white/8 bg-ink-850/50 px-3 py-2 text-sm">

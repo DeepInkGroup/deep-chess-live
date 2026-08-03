@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
+import { useBoardTheme } from '../contexts/BoardThemeContext';
 
 interface BoardPanelProps {
   fen: string;
@@ -25,6 +26,7 @@ export default function BoardPanel({
   bestMoveUci,
 }: BoardPanelProps) {
   const [width, setWidth] = useState(size ?? 480);
+  const { palette } = useBoardTheme();
 
   useEffect(() => {
     if (size) {
@@ -66,8 +68,8 @@ export default function BoardPanel({
         customArrows={arrows as never}
         animationDuration={200}
         customBoardStyle={{ borderRadius: '10px' }}
-        customDarkSquareStyle={{ backgroundColor: '#6b7a99' }}
-        customLightSquareStyle={{ backgroundColor: '#e4e8f3' }}
+        customDarkSquareStyle={{ backgroundColor: palette.dark }}
+        customLightSquareStyle={{ backgroundColor: palette.light }}
         onPieceDrop={(from, to) => (onDrop ? onDrop(from, to) : false)}
         onSquareClick={(square) => onSquareClick?.(square)}
       />

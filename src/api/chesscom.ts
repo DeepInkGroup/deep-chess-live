@@ -1,4 +1,4 @@
-import type { ChessComArchiveGames, ChessComProfile, ChessComStats } from '../types/chesscom';
+import type { ChessComArchiveGames, ChessComProfile, ChessComPuzzle, ChessComStats } from '../types/chesscom';
 
 const BASE = 'https://api.chess.com/pub';
 
@@ -18,6 +18,10 @@ export function getStats(username: string): Promise<ChessComStats> {
 
 export function isOnline(username: string): Promise<{ online: boolean }> {
   return getJson<{ online: boolean }>(`/player/${encodeURIComponent(username)}/is-online`);
+}
+
+export function getDailyPuzzle(): Promise<ChessComPuzzle> {
+  return getJson<ChessComPuzzle>('/puzzle');
 }
 
 export async function getRecentGames(username: string, limit = 20) {

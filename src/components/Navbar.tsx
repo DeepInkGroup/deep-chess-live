@@ -15,6 +15,13 @@ const moreLinks = [
   { to: '/broadcasts', label: 'Broadcasts' },
   { to: '/openings', label: 'Openings' },
   { to: '/leaderboards', label: 'Leaderboards' },
+  { to: '/teams', label: 'Teams' },
+  { to: '/tv/multi', label: 'Multi-board' },
+  { to: '/compare', label: 'Compare players' },
+  { to: '/puzzle/rush', label: 'Puzzle rush' },
+  { to: '/repertoire', label: 'Repertoire trainer' },
+  { to: '/tournaments/calendar', label: "Today's schedule" },
+  { to: '/dashboard', label: 'Dashboard' },
 ];
 
 const allLinks = [...primaryLinks, ...moreLinks];
@@ -85,7 +92,7 @@ export default function Navbar() {
               More <ChevronDown size={14} className={`transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
             </button>
             {moreOpen && (
-              <div className="absolute left-0 top-full mt-1 flex min-w-40 flex-col gap-0.5 rounded-xl border border-white/8 bg-ink-850 p-1.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]">
+              <div className="absolute left-0 top-full mt-1 flex max-h-[70vh] min-w-48 flex-col gap-0.5 overflow-y-auto rounded-xl border border-white/8 bg-ink-850 p-1.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]">
                 {moreLinks.map((l) => (
                   <NavLink key={l.to} to={l.to} className={linkClass} onClick={() => setMoreOpen(false)}>
                     {l.label}

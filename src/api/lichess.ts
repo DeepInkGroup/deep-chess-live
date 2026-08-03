@@ -7,6 +7,9 @@ import type {
   LichessLeaderboard,
   LichessPuzzle,
   LichessRatingHistoryEntry,
+  LichessTeam,
+  LichessTeamMember,
+  LichessTeamSearchResult,
   LichessTournamentDetail,
   LichessTournamentsOverview,
   LichessTvChannels,
@@ -72,11 +75,12 @@ export async function getBroadcastRoundPgn(roundId: string): Promise<string> {
   return res.text();
 }
 
-export async function getUserGames(username: string, max = 20): Promise<LichessGame[]> {
-  const res = await fetch(
-    `${BASE}/api/games/user/${encodeURIComponent(username)}?max=${max}&pgnInJson=true&opening=true&sort=dateDesc`,
-    { headers: { Accept: 'application/x-ndjson' } },
-  );
+export async function getUserGames(username: string, max = 20, vs?: string): Promise<LichessGame[]> {
+  const params = new URLSearchParams({ max: String(max), pgnInJson: 'true', opening: 'true', sort: 'dateDesc' });
+  if (vs) params.set('vs', vs);
+  const res = await fetch(`${BASE}/api/games/user/${encodeURIComponent(username)}?${params.toString()}`, {
+    headers: { Accept: 'application/x-ndjson' },
+  });
   if (!res.ok) throw new Error(`Lichess games export failed: ${res.status}`);
   const text = await res.text();
   return text
@@ -134,4 +138,35 @@ export function streamTvChannelFeed(channel: string, onEvent: (evt: LichessTvFee
 
 export function streamGame(gameId: string, onEvent: (evt: LichessGameStreamEvent) => void, onError?: (err: unknown) => void) {
   return streamNdjson<LichessGameStreamEvent>(`/api/stream/game/${gameId}`, onEvent, onError);
+}
+
+export function searchTeams(query: string, page = 1): Promise<LichessTeamSearchResult> {
+  return getJson<LichessTeamSearchResult>(`/api/team/search?text=${encodeURIComponent(query)}&page=${page}`);
+}
+
+export function getTeam(teamId: string): Promise<LichessTeam> {
+  return getJson<LichessTeam>(`/api/team/${encodeURIComponent(teamId)}`);
+}
+
+export async function getTeamMembers(teamId: string, limit = 30): Promise<LichessTeamMember[]> {
+  const res = await fetch(`${BASE}/api/team/${encodeURIComponent(teamId)}/users`, { headers: { Accept: 'application/x-ndjson' } });
+  if (!res.ok || !res.body) throw new Error(`Team members fetch failed: ${res.status}`);
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  const members: LichessTeamMember[] = [];
+  let buffer = '';
+  while (members.length < limit) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      members.push(JSON.parse(line) as LichessTeamMember);
+      if (members.length >= limit) break;
+    }
+  }
+  reader.cancel().catch(() => {});
+  return members;
 }

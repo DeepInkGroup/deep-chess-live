@@ -56,3 +56,21 @@ export function recordStreak(count: number) {
     /* localStorage unavailable */
   }
 }
+
+const RUSH_BEST_PREFIX = 'deepchess.rushBest.v1.';
+
+export function getBestRushScore(durationSec: number): number {
+  try {
+    return Number(localStorage.getItem(RUSH_BEST_PREFIX + durationSec) ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+export function recordRushScore(durationSec: number, score: number) {
+  try {
+    if (score > getBestRushScore(durationSec)) localStorage.setItem(RUSH_BEST_PREFIX + durationSec, String(score));
+  } catch {
+    /* localStorage unavailable */
+  }
+}

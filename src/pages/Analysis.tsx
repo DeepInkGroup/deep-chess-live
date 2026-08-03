@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Chess } from 'chess.js';
-import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Copy, FlipVertical2, RotateCcw, Target, Upload } from 'lucide-react';
+import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Copy, FlipVertical2, RotateCcw, Target, Upload, Wrench } from 'lucide-react';
 import BoardPanel from '../components/BoardPanel';
+import BoardEditor from '../components/BoardEditor';
 import EvalBar from '../components/EvalBar';
 import EngineLines from '../components/EngineLines';
 import BookMoves from '../components/BookMoves';
@@ -26,6 +27,7 @@ export default function Analysis() {
   const [copied, setCopied] = useState(false);
   const [showBestMove, setShowBestMove] = useState(true);
   const [engineSettings, setEngineSettings] = useState<EngineSettingsValue>({ multiPv: 3, depth: 18, skillLevel: null });
+  const [editorOpen, setEditorOpen] = useState(false);
 
   const stockfish = useStockfish(true, { multiPv: engineSettings.multiPv, skillLevel: engineSettings.skillLevel });
   const fen = index === -1 ? basePosition : moves[index].fen;
@@ -179,11 +181,32 @@ export default function Analysis() {
           >
             <Target size={15} /> Best move
           </button>
+          <button
+            onClick={() => setEditorOpen((v) => !v)}
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
+              editorOpen ? 'border-gold-500/30 bg-gold-500/10 text-gold-400' : 'border-white/10 bg-white/5 text-ink-200 hover:bg-white/10'
+            }`}
+          >
+            <Wrench size={15} /> Set up position
+          </button>
           <EngineSettings value={engineSettings} onChange={setEngineSettings} />
         </div>
       </div>
 
-      {importOpen && (
+      {editorOpen && (
+        <BoardEditor
+          initialFen={fen}
+          onDone={(newFen) => {
+            setBasePosition(newFen);
+            setMoves([]);
+            setIndex(-1);
+            setEditorOpen(false);
+          }}
+          onCancel={() => setEditorOpen(false)}
+        />
+      )}
+
+      {!editorOpen && importOpen && (
         <div className="flex flex-col gap-2 rounded-2xl border border-white/8 bg-ink-850/60 p-4">
           <textarea
             value={importText}
@@ -204,6 +227,7 @@ export default function Analysis() {
         </div>
       )}
 
+      {!editorOpen && (
       <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center">
         <div className="flex items-start gap-3">
           <EvalBar cp={persp.cp} mate={persp.mate} />
@@ -251,6 +275,7 @@ export default function Analysis() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

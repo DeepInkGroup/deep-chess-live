@@ -83,7 +83,8 @@ export interface LichessUser {
   playing?: string;
   streaming?: boolean;
   patron?: boolean;
-  createdAt: number;
+  disabled?: boolean;
+  createdAt?: number;
   seenAt?: number;
   profile?: {
     country?: string;
@@ -92,7 +93,7 @@ export interface LichessUser {
     firstName?: string;
     lastName?: string;
   };
-  perfs: Record<string, LichessPerfStat>;
+  perfs?: Record<string, LichessPerfStat>;
   count?: {
     all: number;
     rated: number;
@@ -323,4 +324,36 @@ export interface LichessLeaderboardUser {
 
 export interface LichessLeaderboard {
   users: LichessLeaderboardUser[];
+}
+
+export interface LichessTeamLeader {
+  id: string;
+  name: string;
+  title?: string;
+}
+
+export interface LichessTeam {
+  id: string;
+  name: string;
+  description?: string;
+  open: boolean;
+  leader: LichessTeamLeader;
+  leaders: LichessTeamLeader[];
+  nbMembers: number;
+}
+
+export interface LichessTeamSearchResult {
+  currentPage: number;
+  maxPerPage: number;
+  currentPageResults: LichessTeam[];
+  nbResults: number;
+  nbPages: number;
+}
+
+export interface LichessTeamMember {
+  name: string;
+  id: string;
+  title?: string;
+  url: string;
+  joinedTeamAt: number;
 }

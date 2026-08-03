@@ -11,6 +11,7 @@ import BookMoves from '../components/BookMoves';
 import BetaBadge from '../components/BetaBadge';
 import LichessGameRow, { ResultPill } from '../components/LichessGameRow';
 import { isFavorite, toggleFavorite } from '../lib/favorites';
+import { recordPlayerView } from '../lib/recentlyViewed';
 import type { ChessComGame, ChessComStats } from '../types/chesscom';
 import { timeAgo } from '../lib/chess';
 
@@ -44,6 +45,12 @@ export default function PlayerProfile() {
   useEffect(() => {
     setFavorite(isFavorite(username));
   }, [username]);
+
+  useEffect(() => {
+    if (!data) return;
+    const title = data.lichessData?.user.title ?? data.chesscomData?.profile.title ?? null;
+    recordPlayerView(username, title);
+  }, [data, username]);
 
   if (loading) return <LoadingBlock label={`Looking up ${username}…`} />;
   if (error || !data) return <ErrorBlock message={error?.message ?? 'Player not found.'} />;

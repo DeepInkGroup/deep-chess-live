@@ -4,6 +4,8 @@ import {
   Bell,
   BookOpen,
   Check,
+  Circle,
+  Clock,
   Compass,
   Download,
   Flame,
@@ -13,6 +15,7 @@ import {
   Palette,
   Radio,
   Star,
+  Swords,
   Target,
   Trash2,
   Trophy,
@@ -23,7 +26,9 @@ import { getPuzzleStats, getRecentPuzzles, getActivityByDay } from '../lib/puzzl
 import PuzzleHeatmap from '../components/PuzzleHeatmap';
 import { exportDashboardData } from '../lib/backup';
 import { getFavorites, removeFavorite } from '../lib/favorites';
+import { getRecentlyViewed } from '../lib/recentlyViewed';
 import { getReminders } from '../lib/reminders';
+import { getUser } from '../api/lichess';
 import { isSoundEnabled, setSoundEnabled, getSoundStyle, setSoundStyle, previewSoundStyle, SOUND_STYLES } from '../lib/sound';
 import type { SoundStyle } from '../lib/sound';
 import { timeAgo, START_FEN } from '../lib/chess';
@@ -32,6 +37,7 @@ import { PIECE_SETS } from '../lib/pieceSets';
 import { useBoardTheme } from '../contexts/BoardThemeContext';
 import BoardPanel from '../components/BoardPanel';
 import type { FavoritePlayer } from '../lib/favorites';
+import type { RecentPlayer } from '../lib/recentlyViewed';
 
 const QUICK_LINKS = [
   { to: '/streamers', label: 'Streamers', icon: Radio },
@@ -46,15 +52,36 @@ export default function Dashboard() {
   const [recent] = useState(() => getRecentPuzzles(8));
   const [activity] = useState(() => getActivityByDay(84));
   const [favorites, setFavorites] = useState<FavoritePlayer[]>([]);
+  const [favoriteStatus, setFavoriteStatus] = useState<Record<string, { online?: boolean; playing?: string }>>({});
+  const [recentlyViewed, setRecentlyViewed] = useState<RecentPlayer[]>([]);
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const [soundStyle, setSoundStyleState] = useState<SoundStyle>(() => getSoundStyle());
   const [reminderCount, setReminderCount] = useState(0);
   const { paletteId, setPaletteId, pieceSetId, setPieceSetId } = useBoardTheme();
 
   useEffect(() => {
-    setFavorites(getFavorites());
+    const favs = getFavorites();
+    setFavorites(favs);
     setStats(getPuzzleStats());
     setReminderCount(getReminders().length);
+    setRecentlyViewed(getRecentlyViewed(8));
+
+    if (favs.length > 0) {
+      Promise.all(
+        favs.slice(0, 12).map(async (f) => {
+          try {
+            const user = await getUser(f.username);
+            return [f.username, { online: user.online, playing: user.playing }] as const;
+          } catch {
+            return [f.username, {}] as const;
+          }
+        }),
+      ).then((results) => {
+        const map: Record<string, { online?: boolean; playing?: string }> = {};
+        for (const [username, status] of results) map[username] = status;
+        setFavoriteStatus(map);
+      });
+    }
   }, []);
 
   function unfavorite(username: string) {
@@ -144,20 +171,52 @@ export default function Dashboard() {
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {favorites.map((f) => (
-                  <div key={f.username} className="flex items-center justify-between gap-2 rounded-xl border border-white/8 bg-ink-850/60 px-4 py-3">
-                    <Link to={`/players/${f.username}`} className="flex min-w-0 items-center gap-1.5 text-sm text-ink-100 hover:text-gold-400">
-                      {f.title && <span className="text-gold-400">{f.title}</span>}
-                      <span className="truncate">{f.username}</span>
-                    </Link>
-                    <button onClick={() => unfavorite(f.username)} aria-label="Remove favorite" className="shrink-0 text-ink-500 hover:text-ruby-400">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
+                {favorites.map((f) => {
+                  const status = favoriteStatus[f.username];
+                  return (
+                    <div key={f.username} className="flex items-center justify-between gap-2 rounded-xl border border-white/8 bg-ink-850/60 px-4 py-3">
+                      <Link to={`/players/${f.username}`} className="flex min-w-0 items-center gap-1.5 text-sm text-ink-100 hover:text-gold-400">
+                        {f.title && <span className="text-gold-400">{f.title}</span>}
+                        <span className="truncate">{f.username}</span>
+                        {status?.playing ? (
+                          <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-emerald-400">
+                            <Swords size={11} /> Playing
+                          </span>
+                        ) : status?.online ? (
+                          <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-emerald-400">
+                            <Circle size={7} className="fill-current" /> Online
+                          </span>
+                        ) : null}
+                      </Link>
+                      <button onClick={() => unfavorite(f.username)} aria-label="Remove favorite" className="shrink-0 text-ink-500 hover:text-ruby-400">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </section>
+
+          {recentlyViewed.length > 0 && (
+            <section>
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-ink-400">
+                <Clock size={16} className="text-gold-400" /> Recently viewed
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {recentlyViewed.map((p) => (
+                  <Link
+                    key={p.username}
+                    to={`/players/${p.username}`}
+                    className="flex items-center gap-1.5 rounded-lg border border-white/8 bg-ink-850/60 px-3 py-1.5 text-sm text-ink-200 hover:border-gold-500/30 hover:text-gold-400"
+                  >
+                    {p.title && <span className="text-gold-400">{p.title}</span>}
+                    {p.username}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section>
             <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-ink-400">

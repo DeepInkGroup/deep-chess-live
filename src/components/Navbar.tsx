@@ -28,7 +28,13 @@ const moreLinks = [
   { to: '/leaderboards/country', label: 'Country leaderboard' },
 ];
 
-const allLinks = [...primaryLinks, ...moreLinks];
+const mobileGroups: { title: string; links: typeof primaryLinks }[] = [
+  { title: 'Watch', links: [{ to: '/', label: 'Home' }, { to: '/tv', label: 'Live TV' }, { to: '/tv/multi', label: 'Multi-board' }, { to: '/broadcasts', label: 'Broadcasts' }, { to: '/streamers', label: 'Streamers' }] },
+  { title: 'Compete', links: [{ to: '/tournaments', label: 'Tournaments' }, { to: '/tournaments/calendar', label: "Today's schedule" }, { to: '/puzzle', label: 'Puzzle' }, { to: '/puzzle/rush', label: 'Puzzle rush' }] },
+  { title: 'Study', links: [{ to: '/analysis', label: 'Analysis' }, { to: '/openings', label: 'Openings' }, { to: '/repertoire', label: 'Repertoire trainer' } ] },
+  { title: 'Players & teams', links: [{ to: '/players', label: 'Players' }, { to: '/compare', label: 'Compare players' }, { to: '/teams', label: 'Teams' }, { to: '/leaderboards', label: 'Leaderboards' }, { to: '/leaderboards/country', label: 'Country leaderboard' } ] },
+  { title: 'You', links: [{ to: '/dashboard', label: 'Dashboard' }] },
+];
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
@@ -78,7 +84,7 @@ export default function Navbar() {
   }
 
   return (
-    <header className="pt-safe pl-safe pr-safe fixed inset-x-0 top-0 z-50 border-b border-white/5">
+    <header className="pt-safe pl-safe pr-safe fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-ink-950/95 backdrop-blur-md">
       <div ref={barRef} className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
         <NavLink to="/" className="flex items-center gap-2 shrink-0">
           <span className="font-display text-lg font-semibold tracking-tight text-ink-100">
@@ -150,7 +156,7 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="border-t border-white/5 px-4 pb-4 md:hidden">
+        <div className="max-h-[calc(100vh-var(--header-h,64px))] overflow-y-auto border-t border-white/5 bg-ink-950 px-4 pb-6 md:hidden">
           <form onSubmit={handleSearch} className="mt-3 flex items-center gap-2 rounded-lg border border-white/8 bg-white/5 px-3 py-2">
             <Search size={15} className="text-ink-400 shrink-0" />
             <input
@@ -160,23 +166,28 @@ export default function Navbar() {
               className="w-full bg-transparent text-sm text-ink-100 placeholder:text-ink-400 focus:outline-none"
             />
           </form>
-          <nav className="mt-2 flex flex-col gap-1">
-            {allLinks.map((l) => (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                end={l.to === '/'}
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                    isActive ? 'bg-white/8 text-ink-100' : 'text-ink-300 hover:text-ink-100 hover:bg-white/5'
-                  }`
-                }
-              >
-                {l.label}
-              </NavLink>
-            ))}
-          </nav>
+          {mobileGroups.map((group) => (
+            <div key={group.title} className="mt-4">
+              <p className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wide text-ink-500">{group.title}</p>
+              <nav className="flex flex-col gap-1">
+                {group.links.map((l) => (
+                  <NavLink
+                    key={l.to}
+                    to={l.to}
+                    end={l.to === '/'}
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) =>
+                      `rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                        isActive ? 'bg-white/8 text-ink-100' : 'text-ink-300 hover:text-ink-100 hover:bg-white/5'
+                      }`
+                    }
+                  >
+                    {l.label}
+                  </NavLink>
+                ))}
+              </nav>
+            </div>
+          ))}
         </div>
       )}
     </header>

@@ -8,6 +8,7 @@ import { getPlayerOpeningExplorer } from '../api/explorer';
 import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
 import RatingChart from '../components/RatingChart';
 import BookMoves from '../components/BookMoves';
+import BetaBadge from '../components/BetaBadge';
 import { isFavorite, toggleFavorite } from '../lib/favorites';
 import type { LichessGame } from '../types/lichess';
 import type { ChessComGame, ChessComStats } from '../types/chesscom';
@@ -213,7 +214,7 @@ function MostPlayedOpeningsSection({ username }: { username: string }) {
   return (
     <section>
       <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-ink-400">
-        <BookOpen size={16} className="text-gold-400" /> Most played openings
+        <BookOpen size={16} className="text-gold-400" /> Most played openings <BetaBadge />
       </h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <BookMoves data={white.data} loading={white.loading} minGames={1} title="As White" />

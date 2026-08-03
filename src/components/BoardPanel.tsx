@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { useBoardTheme } from '../contexts/BoardThemeContext';
+import { useResponsiveBoardWidth } from '../hooks/useResponsiveBoardWidth';
 
 interface BoardPanelProps {
   fen: string;
@@ -25,23 +25,8 @@ export default function BoardPanel({
   onSquareClick,
   bestMoveUci,
 }: BoardPanelProps) {
-  const [width, setWidth] = useState(size ?? 480);
+  const width = useResponsiveBoardWidth(size);
   const { palette, customPieces } = useBoardTheme();
-
-  useEffect(() => {
-    if (size) {
-      setWidth(size);
-      return;
-    }
-    function update() {
-      const vw = window.innerWidth;
-      const target = Math.min(560, vw - (vw < 640 ? 48 : 96));
-      setWidth(Math.max(260, target));
-    }
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, [size]);
 
   const highlightStyles: Record<string, React.CSSProperties> = {};
   if (lastMoveUci && lastMoveUci.length >= 4) {

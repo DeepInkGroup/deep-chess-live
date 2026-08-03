@@ -3,6 +3,7 @@ import { Globe2 } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
 import { getTeamMembers, getUser } from '../api/lichess';
 import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
+import BetaBadge from '../components/BetaBadge';
 
 const COUNTRIES: { label: string; teamId: string }[] = [
   { label: 'United States', teamId: 'usa' },
@@ -39,7 +40,7 @@ export default function CountryLeaderboard() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="flex items-center gap-2 font-display text-2xl font-semibold text-ink-100 sm:text-3xl">
-          <Globe2 className="text-gold-400" /> Country Leaderboard
+          <Globe2 className="text-gold-400" /> Country Leaderboard <BetaBadge />
         </h1>
         <p className="mt-1 text-sm text-ink-400">
           Lichess doesn't publish an official country ranking, so this ranks members of a well-known community team for each country. Treat it as

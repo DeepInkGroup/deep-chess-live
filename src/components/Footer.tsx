@@ -6,21 +6,42 @@ function GithubIcon({ size = 18 }: { size?: number }) {
   );
 }
 
+function TelegramIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M21.05 3.16 2.9 10.24c-1.24.5-1.23 1.19-.23 1.5l4.65 1.45 1.8 5.5c.22.6.11.84.75.84.5 0 .72-.23 1-.5l2.4-2.33 4.7 3.47c.87.48 1.5.23 1.72-.8l3.1-14.6c.3-1.26-.48-1.83-1.74-1.31Zm-11.4 11.02 8.9-8.04c.42-.36-.09-.56-.65-.2L8.02 13.4l-.32 4.5-.05-.32-1-.68Z" />
+    </svg>
+  );
+}
+
+const APP_VERSION = 'V 1.2.0';
+
 export default function Footer() {
   return (
-    <footer className="border-t border-white/5 py-6">
+    <footer className="pb-safe border-t border-white/5 py-6">
       <div className="mx-auto grid max-w-7xl grid-cols-3 items-center px-4 text-xs text-ink-400 sm:px-6">
-        <span className="text-left">V 1.1.2</span>
+        <span className="text-left">{APP_VERSION}</span>
         <span className="text-center font-medium text-ink-300">DeepInk Group</span>
-        <a
-          href="https://github.com/DeepInkGroup"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="DeepInk Group on GitHub"
-          className="flex justify-end text-ink-300 transition-colors hover:text-gold-400"
-        >
-          <GithubIcon />
-        </a>
+        <div className="flex items-center justify-end gap-4">
+          <a
+            href="https://t.me/DeepInkGroup"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="DeepInk Group on Telegram"
+            className="text-ink-300 transition-colors hover:text-gold-400"
+          >
+            <TelegramIcon />
+          </a>
+          <a
+            href="https://github.com/DeepInkGroup"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="DeepInk Group on GitHub"
+            className="text-ink-300 transition-colors hover:text-gold-400"
+          >
+            <GithubIcon />
+          </a>
+        </div>
       </div>
     </footer>
   );

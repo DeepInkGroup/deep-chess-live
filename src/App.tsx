@@ -4,6 +4,7 @@ import Footer from './components/Footer';
 import PipBoard from './components/PipBoard';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
 import TournamentReminders from './components/TournamentReminders';
+import InstallPrompt from './components/InstallPrompt';
 import Home from './pages/Home';
 import LiveTv from './pages/LiveTv';
 import Watch from './pages/Watch';
@@ -73,6 +74,7 @@ function App() {
       <PipBoard />
       <KeyboardShortcuts />
       <TournamentReminders />
+      <InstallPrompt />
     </>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Grid2x2 } from 'lucide-react';
 import TvChannelCard, { channelLabel } from '../components/TvChannelCard';
+import BetaBadge from '../components/BetaBadge';
 
 const ALL_CHANNELS = [
   'best',
@@ -54,7 +55,7 @@ export default function MultiWatch() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="flex items-center gap-2 font-display text-2xl font-semibold text-ink-100 sm:text-3xl">
-          <Grid2x2 className="text-gold-400" /> Multi-board
+          <Grid2x2 className="text-gold-400" /> Multi-board <BetaBadge />
         </h1>
         <p className="mt-1 text-sm text-ink-400">Pick up to {MAX_BOARDS} channels to watch side by side.</p>
       </div>

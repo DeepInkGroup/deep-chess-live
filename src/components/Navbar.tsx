@@ -69,7 +69,7 @@ export default function Navbar() {
   }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5">
+    <header className="pt-safe pl-safe pr-safe fixed inset-x-0 top-0 z-50 border-b border-white/5">
       <div ref={barRef} className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
         <NavLink to="/" className="flex items-center gap-2 shrink-0">
           <span className="font-display text-lg font-semibold tracking-tight text-ink-100">

@@ -3,6 +3,7 @@ import { ExternalLink, Trophy, Users } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
 import { getTeam, getTeamArena, getTeamMembers } from '../api/lichess';
 import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
+import BetaBadge from '../components/BetaBadge';
 import { timeAgo } from '../lib/chess';
 
 function stripMarkdown(text: string): string {
@@ -48,7 +49,7 @@ export default function TeamDetail() {
 
       <section>
         <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-ink-400">
-          <Trophy size={16} className="text-gold-400" /> Recent activity
+          <Trophy size={16} className="text-gold-400" /> Recent activity <BetaBadge />
         </h2>
         {arenaState.loading && <LoadingBlock label="Loading recent tournaments…" />}
         {arenaState.data && arenaState.data.length === 0 && (

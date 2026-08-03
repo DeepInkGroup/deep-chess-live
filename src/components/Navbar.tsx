@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { ChevronDown, Menu, Search, X } from 'lucide-react';
+import { ChevronDown, Menu, Moon, Search, Sun, X } from 'lucide-react';
+import { getStoredAppTheme, setStoredAppTheme } from '../lib/appTheme';
+import type { AppTheme } from '../lib/appTheme';
 
 const primaryLinks = [
   { to: '/', label: 'Home' },
@@ -37,6 +39,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [theme, setTheme] = useState<AppTheme>(() => getStoredAppTheme());
   const navigate = useNavigate();
   const moreRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
@@ -58,6 +61,12 @@ export default function Navbar() {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  function toggleTheme() {
+    const next: AppTheme = theme === 'dark' ? 'light' : 'dark';
+    setStoredAppTheme(next);
+    setTheme(next);
+  }
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -116,7 +125,23 @@ export default function Navbar() {
         </form>
 
         <button
-          className="ml-auto rounded-lg p-2 text-ink-200 hover:bg-white/5 md:hidden"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="hidden rounded-lg p-2 text-ink-300 hover:bg-white/5 hover:text-ink-100 md:flex"
+        >
+          {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+        </button>
+
+        <button
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="ml-auto rounded-lg p-2 text-ink-300 hover:bg-white/5 hover:text-ink-100 md:hidden"
+        >
+          {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
+        </button>
+
+        <button
+          className="rounded-lg p-2 text-ink-200 hover:bg-white/5 md:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
         >

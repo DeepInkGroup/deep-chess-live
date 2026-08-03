@@ -5,6 +5,7 @@ import {
   BookOpen,
   Check,
   Compass,
+  Download,
   Flame,
   Grid2x2,
   Keyboard,
@@ -18,10 +19,13 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
-import { getPuzzleStats, getRecentPuzzles } from '../lib/puzzleHistory';
+import { getPuzzleStats, getRecentPuzzles, getActivityByDay } from '../lib/puzzleHistory';
+import PuzzleHeatmap from '../components/PuzzleHeatmap';
+import { exportDashboardData } from '../lib/backup';
 import { getFavorites, removeFavorite } from '../lib/favorites';
 import { getReminders } from '../lib/reminders';
-import { isSoundEnabled, setSoundEnabled } from '../lib/sound';
+import { isSoundEnabled, setSoundEnabled, getSoundStyle, setSoundStyle, previewSoundStyle, SOUND_STYLES } from '../lib/sound';
+import type { SoundStyle } from '../lib/sound';
 import { timeAgo, START_FEN } from '../lib/chess';
 import { BOARD_PALETTES } from '../lib/boardTheme';
 import { PIECE_SETS } from '../lib/pieceSets';
@@ -40,8 +44,10 @@ const QUICK_LINKS = [
 export default function Dashboard() {
   const [stats, setStats] = useState(() => getPuzzleStats());
   const [recent] = useState(() => getRecentPuzzles(8));
+  const [activity] = useState(() => getActivityByDay(84));
   const [favorites, setFavorites] = useState<FavoritePlayer[]>([]);
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
+  const [soundStyle, setSoundStyleState] = useState<SoundStyle>(() => getSoundStyle());
   const [reminderCount, setReminderCount] = useState(0);
   const { paletteId, setPaletteId, pieceSetId, setPieceSetId } = useBoardTheme();
 
@@ -62,13 +68,27 @@ export default function Dashboard() {
     setSoundOn(next);
   }
 
+  function chooseSoundStyle(style: SoundStyle) {
+    setSoundStyle(style);
+    setSoundStyleState(style);
+    previewSoundStyle(style);
+  }
+
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="flex items-center gap-2 font-display text-2xl font-semibold text-ink-100 sm:text-3xl">
-          <LayoutDashboard className="text-gold-400" /> Your Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-ink-400">Puzzle progress, favorite players, and preferences — all stored locally in this browser.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="flex items-center gap-2 font-display text-2xl font-semibold text-ink-100 sm:text-3xl">
+            <LayoutDashboard className="text-gold-400" /> Your Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-ink-400">Puzzle progress, favorite players, and preferences — all stored locally in this browser.</p>
+        </div>
+        <button
+          onClick={exportDashboardData}
+          className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-ink-200 hover:bg-white/10"
+        >
+          <Download size={15} /> Export data
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
@@ -85,6 +105,10 @@ export default function Dashboard() {
                 label="Success rate"
                 value={stats.totalAttempted ? `${Math.round((stats.totalSolved / stats.totalAttempted) * 100)}%` : '—'}
               />
+            </div>
+            <div className="mt-3 rounded-2xl border border-white/8 bg-ink-850/60 p-3">
+              <p className="mb-2 px-1 text-[11px] font-medium uppercase tracking-wide text-ink-500">Puzzle activity</p>
+              <PuzzleHeatmap data={activity} />
             </div>
             {recent.length > 0 && (
               <div className="mt-3 flex flex-col gap-1.5 rounded-2xl border border-white/8 bg-ink-850/60 p-3">
@@ -169,6 +193,19 @@ export default function Dashboard() {
                   {soundOn ? 'On' : 'Off'}
                 </span>
               </button>
+              <div className="flex flex-wrap items-center gap-1.5 px-2 py-1">
+                {SOUND_STYLES.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => chooseSoundStyle(s.id)}
+                    className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                      soundStyle === s.id ? 'bg-gold-500 text-ink-950' : 'bg-white/5 text-ink-300 hover:bg-white/10'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
               <div className="flex items-center justify-between gap-2 rounded-lg px-2 py-2 text-sm text-ink-200">
                 <span className="flex items-center gap-2">
                   <Bell size={15} className="text-gold-400" /> Tournament reminders

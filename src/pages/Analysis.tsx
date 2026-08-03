@@ -12,6 +12,7 @@ import type { EngineSettingsValue } from '../components/EngineSettings';
 import { useStockfish } from '../hooks/useStockfish';
 import { useAsync } from '../hooks/useAsync';
 import { useResponsiveBoardWidth } from '../hooks/useResponsiveBoardWidth';
+import { useLandscapePhone } from '../hooks/useLandscapePhone';
 import { getOpeningExplorer } from '../api/explorer';
 import { movesFromPgn, movesToPgn, scoreToWhitePerspective, START_FEN } from '../lib/chess';
 import type { MoveStep } from '../lib/chess';
@@ -32,6 +33,7 @@ export default function Analysis() {
 
   const stockfish = useStockfish(true, { multiPv: engineSettings.multiPv, skillLevel: engineSettings.skillLevel });
   const boardWidth = useResponsiveBoardWidth();
+  const landscapePhone = useLandscapePhone();
   const fen = index === -1 ? basePosition : moves[index].fen;
   const book = useAsync(() => getOpeningExplorer(fen), [fen]);
 
@@ -241,7 +243,7 @@ export default function Analysis() {
       )}
 
       {!editorOpen && (
-      <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center">
+      <div className={`flex flex-col items-center gap-6 lg:justify-center ${landscapePhone ? 'flex-row items-start' : 'lg:flex-row lg:items-start'}`}>
         <div className="flex items-start gap-3">
           <EvalBar cp={persp.cp} mate={persp.mate} height={boardWidth} loading={stockfish.thinking && stockfish.lines.length === 0} />
           <div className="flex flex-col items-center gap-2">

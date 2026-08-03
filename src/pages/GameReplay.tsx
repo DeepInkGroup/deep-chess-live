@@ -7,6 +7,7 @@ import PlayerBadge from '../components/PlayerBadge';
 import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
 import { useAsync } from '../hooks/useAsync';
 import { useGameAccuracy } from '../hooks/useGameAccuracy';
+import WinProbabilityChart from '../components/WinProbabilityChart';
 import { getGamePgn } from '../api/lichess';
 import { movesFromPgn, START_FEN } from '../lib/chess';
 import type { ChessComGame } from '../types/chesscom';
@@ -91,16 +92,19 @@ export default function GameReplay() {
       </div>
 
       {accuracy.result && (
-        <div className="flex items-center justify-center gap-8 rounded-2xl border border-white/8 bg-ink-850/60 p-4">
-          <div className="text-center">
-            <p className="text-xs uppercase tracking-wide text-ink-400">{data.white}</p>
-            <p className="font-display text-2xl font-semibold text-ink-100">{accuracy.result.white.toFixed(1)}%</p>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-center gap-8 rounded-2xl border border-white/8 bg-ink-850/60 p-4">
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-wide text-ink-400">{data.white}</p>
+              <p className="font-display text-2xl font-semibold text-ink-100">{accuracy.result.white.toFixed(1)}%</p>
+            </div>
+            <span className="text-ink-500">accuracy</span>
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-wide text-ink-400">{data.black}</p>
+              <p className="font-display text-2xl font-semibold text-ink-100">{accuracy.result.black.toFixed(1)}%</p>
+            </div>
           </div>
-          <span className="text-ink-500">accuracy</span>
-          <div className="text-center">
-            <p className="text-xs uppercase tracking-wide text-ink-400">{data.black}</p>
-            <p className="font-display text-2xl font-semibold text-ink-100">{accuracy.result.black.toFixed(1)}%</p>
-          </div>
+          {accuracy.evalHistory && <WinProbabilityChart evalHistory={accuracy.evalHistory} />}
         </div>
       )}
 

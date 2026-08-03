@@ -31,6 +31,7 @@ import RepertoireTrainer from './pages/RepertoireTrainer';
 import TournamentCalendar from './pages/TournamentCalendar';
 import Streamers from './pages/Streamers';
 import CountryLeaderboard from './pages/CountryLeaderboard';
+import PlayerGames from './pages/PlayerGames';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
           <Route path="/watch/:gameId" element={<Watch />} />
           <Route path="/players" element={<Players />} />
           <Route path="/players/:username" element={<PlayerProfile />} />
+          <Route path="/players/:username/games" element={<PlayerGames />} />
           <Route path="/compare" element={<HeadToHead />} />
           <Route path="/compare/:userA/:userB" element={<HeadToHead />} />
           <Route path="/replay/:gameId" element={<GameReplay />} />

@@ -101,6 +101,92 @@ body {
   animation: shimmer 1.6s ease-in-out infinite;
 }
 
+[data-theme='light'] {
+  color-scheme: light;
+
+  --color-ink-950: #f4f5f9;
+  --color-ink-900: #ffffff;
+  --color-ink-850: #ffffff;
+  --color-ink-800: #eef0f5;
+  --color-ink-700: #e2e5ee;
+  --color-ink-600: #cdd2e0;
+  --color-ink-500: #6b7290;
+  --color-ink-400: #545b7a;
+  --color-ink-300: #3a4060;
+  --color-ink-200: #232748;
+  --color-ink-100: #12142a;
+
+  --color-gold-500: #a9700c;
+  --color-gold-400: #c98a12;
+  --color-gold-300: #e0a52a;
+
+  --color-emerald-500: #1f9d68;
+  --color-emerald-400: #17835a;
+
+  --color-ruby-500: #d42a55;
+  --color-ruby-400: #b81e46;
+}
+
+[data-theme='light'] body {
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, #ffffff 0%, var(--color-ink-950) 55%);
+}
+
+[data-theme='light'] .bg-white\/5 {
+  background-color: rgba(18, 22, 45, 0.04);
+}
+[data-theme='light'] .bg-white\/8 {
+  background-color: rgba(18, 22, 45, 0.06);
+}
+[data-theme='light'] .bg-white\/10 {
+  background-color: rgba(18, 22, 45, 0.08);
+}
+[data-theme='light'] .hover\:bg-white\/5:hover {
+  background-color: rgba(18, 22, 45, 0.04);
+}
+[data-theme='light'] .hover\:bg-white\/10:hover {
+  background-color: rgba(18, 22, 45, 0.07);
+}
+[data-theme='light'] .hover\:bg-white\/15:hover {
+  background-color: rgba(18, 22, 45, 0.1);
+}
+[data-theme='light'] .border-white\/5 {
+  border-color: rgba(18, 22, 45, 0.08);
+}
+[data-theme='light'] .border-white\/6 {
+  border-color: rgba(18, 22, 45, 0.09);
+}
+[data-theme='light'] .border-white\/8 {
+  border-color: rgba(18, 22, 45, 0.12);
+}
+[data-theme='light'] .border-white\/10 {
+  border-color: rgba(18, 22, 45, 0.14);
+}
+[data-theme='light'] .border-white\/20 {
+  border-color: rgba(18, 22, 45, 0.22);
+}
+[data-theme='light'] .bg-ink-850\/50 {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+[data-theme='light'] .bg-ink-850\/60 {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+[data-theme='light'] .bg-ink-850\/70 {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+[data-theme='light'] .bg-ink-900\/60 {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+[data-theme='light'] .bg-ink-950\/60 {
+  background-color: rgba(244, 245, 249, 0.6);
+}
+[data-theme='light'] .glass {
+  background: linear-gradient(180deg, rgba(18, 22, 45, 0.035), rgba(18, 22, 45, 0.012));
+  border: 1px solid rgba(18, 22, 45, 0.09);
+}
+[data-theme='light'] ::-webkit-scrollbar-thumb {
+  border-color: var(--color-ink-950);
+}
+
 .pt-safe {
   padding-top: env(safe-area-inset-top);
 }

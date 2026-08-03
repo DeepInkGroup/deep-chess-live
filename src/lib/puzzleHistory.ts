@@ -57,6 +57,25 @@ export function recordStreak(count: number) {
   }
 }
 
+/** Solved-puzzle counts per calendar day (local time) for the last `days` days, oldest first. */
+export function getActivityByDay(days = 84): { date: string; count: number }[] {
+  const all = readAll().filter((e) => e.solved);
+  const counts = new Map<string, number>();
+  for (const entry of all) {
+    const key = new Date(entry.date).toDateString();
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const result: { date: string; count: number }[] = [];
+  const today = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toDateString();
+    result.push({ date: key, count: counts.get(key) ?? 0 });
+  }
+  return result;
+}
+
 const RUSH_BEST_PREFIX = 'deepchess.rushBest.v1.';
 
 export function getBestRushScore(durationSec: number): number {

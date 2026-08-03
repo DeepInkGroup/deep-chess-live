@@ -12,6 +12,7 @@ import { useTvChannelGame, useGameStream } from '../hooks/useLiveGame';
 import { useStockfish } from '../hooks/useStockfish';
 import { useMoveSound } from '../hooks/useMoveSound';
 import { useResponsiveBoardWidth } from '../hooks/useResponsiveBoardWidth';
+import { useLandscapePhone } from '../hooks/useLandscapePhone';
 import { channelLabel } from '../components/TvChannelCard';
 import { LoadingBlock } from '../components/StatusViews';
 import { scoreToWhitePerspective } from '../lib/chess';
@@ -22,6 +23,7 @@ export default function Watch() {
   const [engineOn, setEngineOn] = useState(false);
   const { openPip } = usePip();
   const boardWidth = useResponsiveBoardWidth();
+  const landscapePhone = useLandscapePhone();
 
   const channelGame = useTvChannelGame(channel ?? null);
   const singleGame = useGameStream(gameId ?? null);
@@ -90,7 +92,7 @@ export default function Watch() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center">
+      <div className={`flex flex-col items-center gap-6 lg:justify-center ${landscapePhone ? 'flex-row items-start' : 'lg:flex-row lg:items-start'}`}>
         <div className="flex items-start gap-3">
           {engineOn && <EvalBar cp={persp.cp} mate={persp.mate} height={boardWidth} loading={stockfish.thinking && stockfish.lines.length === 0} />}
           <div className="flex flex-col items-center gap-3">

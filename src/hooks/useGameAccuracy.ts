@@ -6,7 +6,7 @@ export interface AccuracyResult {
   black: number;
 }
 
-function winPercent(whiteCp: number): number {
+export function winPercent(whiteCp: number): number {
   return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * whiteCp)) - 1);
 }
 
@@ -44,12 +44,14 @@ export function useGameAccuracy() {
   const [progress, setProgress] = useState(0);
   const [total, setTotal] = useState(0);
   const [result, setResult] = useState<AccuracyResult | null>(null);
+  const [evalHistory, setEvalHistory] = useState<number[] | null>(null);
   const cancelRef = useRef(false);
 
   async function run(basePosition: string, moves: MoveStep[], depth = 12, maxPlies = 60) {
     cancelRef.current = false;
     setRunning(true);
     setResult(null);
+    setEvalHistory(null);
     const trimmed = moves.slice(0, maxPlies);
     setTotal(trimmed.length + 1);
     setProgress(0);
@@ -87,6 +89,7 @@ export function useGameAccuracy() {
     }
     const avg = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0);
     setResult({ white: avg(whiteAcc), black: avg(blackAcc) });
+    setEvalHistory(evals);
     setRunning(false);
   }
 
@@ -94,5 +97,5 @@ export function useGameAccuracy() {
     cancelRef.current = true;
   }
 
-  return { run, cancel, running, progress, total, result };
+  return { run, cancel, running, progress, total, result, evalHistory };
 }

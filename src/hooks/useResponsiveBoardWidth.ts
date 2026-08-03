@@ -11,8 +11,12 @@ export function useResponsiveBoardWidth(size?: number): number {
     }
     function update() {
       const vw = window.innerWidth;
-      const target = Math.min(560, vw - (vw < 640 ? 48 : 96));
-      setWidth(Math.max(260, target));
+      const vh = window.innerHeight;
+      const widthTarget = Math.min(560, vw - (vw < 640 ? 48 : 96));
+      // Leave room for the header, page title/controls, and player badges when the viewport is short
+      // (e.g. a phone in landscape) so the board never forces the page to scroll vertically.
+      const heightTarget = vh - 220;
+      setWidth(Math.max(220, Math.min(widthTarget, heightTarget > 0 ? heightTarget : widthTarget)));
     }
     update();
     window.addEventListener('resize', update);

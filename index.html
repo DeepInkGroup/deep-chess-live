@@ -13,6 +13,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="DeepChess" />
     <title>DeepChess Live</title>
+    <script>
+      try {
+        var t = localStorage.getItem('deepchess.appTheme.v1');
+        if (t === 'light') document.documentElement.dataset.theme = 'light';
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,6 +1,6 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { BookOpen, Calendar, Circle, ExternalLink, LineChart, Star, Trophy } from 'lucide-react';
+import { Archive, BookOpen, Calendar, Circle, ExternalLink, LineChart, Star, Trophy } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
 import * as lichess from '../api/lichess';
 import * as chesscom from '../api/chesscom';
@@ -9,8 +9,8 @@ import { LoadingBlock, ErrorBlock } from '../components/StatusViews';
 import RatingChart from '../components/RatingChart';
 import BookMoves from '../components/BookMoves';
 import BetaBadge from '../components/BetaBadge';
+import LichessGameRow, { ResultPill } from '../components/LichessGameRow';
 import { isFavorite, toggleFavorite } from '../lib/favorites';
-import type { LichessGame } from '../types/lichess';
 import type { ChessComGame, ChessComStats } from '../types/chesscom';
 import { timeAgo } from '../lib/chess';
 
@@ -142,6 +142,12 @@ export default function PlayerProfile() {
           {lichessData.games.map((g) => (
             <LichessGameRow key={g.id} game={g} username={username} />
           ))}
+          <Link
+            to={`/players/${username}/games`}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-white/8 bg-ink-850/30 px-4 py-2.5 text-sm text-gold-400 transition-colors hover:border-gold-500/30 hover:bg-ink-850/50"
+          >
+            <Archive size={14} /> Browse full game archive
+          </Link>
         </GamesSection>
       )}
 
@@ -245,41 +251,6 @@ function GamesSection({ title, icon, children }: { title: string; icon: React.Re
   );
 }
 
-function ResultPill({ result }: { result: 'win' | 'loss' | 'draw' }) {
-  const styles = {
-    win: 'bg-emerald-500/15 text-emerald-400',
-    loss: 'bg-ruby-500/15 text-ruby-400',
-    draw: 'bg-white/8 text-ink-300',
-  };
-  const text = { win: 'Won', loss: 'Lost', draw: 'Draw' };
-  return <span className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold ${styles[result]}`}>{text[result]}</span>;
-}
-
-function LichessGameRow({ game, username }: { game: LichessGame; username: string }) {
-  const navigate = useNavigate();
-  const isWhite = game.players.white.user?.id?.toLowerCase() === username.toLowerCase();
-  const opponent = isWhite ? game.players.black : game.players.white;
-  const result: 'win' | 'loss' | 'draw' = !game.winner ? 'draw' : (game.winner === 'white') === isWhite ? 'win' : 'loss';
-
-  return (
-    <button
-      onClick={() => navigate(`/replay/${game.id}`, { state: { source: 'lichess', gameId: game.id } })}
-      className="flex items-center gap-3 rounded-xl border border-white/8 bg-ink-850/50 px-4 py-3 text-left transition-colors hover:border-gold-500/30"
-    >
-      <ResultPill result={result} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm text-ink-100">
-          vs {opponent.user?.title && <span className="text-gold-400">{opponent.user.title} </span>}
-          {opponent.user?.name ?? opponent.name ?? 'Anonymous'} {opponent.rating && <span className="text-ink-500">({opponent.rating})</span>}
-        </p>
-        <p className="text-xs text-ink-500">
-          {game.speed} · {game.rated ? 'Rated' : 'Casual'} · {game.opening?.name ?? game.variant}
-        </p>
-      </div>
-      <span className="shrink-0 text-xs text-ink-500">{timeAgo(game.lastMoveAt ?? game.createdAt)}</span>
-    </button>
-  );
-}
 
 function ChessComGameRow({ game, username }: { game: ChessComGame; username: string }) {
   const navigate = useNavigate();

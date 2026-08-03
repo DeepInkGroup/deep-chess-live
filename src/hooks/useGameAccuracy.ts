@@ -54,7 +54,7 @@ export function useGameAccuracy() {
     setTotal(trimmed.length + 1);
     setProgress(0);
 
-    const worker = new Worker('/stockfish/stockfish-18-lite-single.js');
+    const worker = new Worker(`${import.meta.env.BASE_URL}stockfish/stockfish-18-lite-single.js`);
     await new Promise<void>((resolve) => {
       worker.onmessage = (e: MessageEvent<string>) => {
         if (e.data === 'uciok') worker.postMessage('isready');

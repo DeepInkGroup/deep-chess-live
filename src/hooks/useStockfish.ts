@@ -50,7 +50,7 @@ export function useStockfish(enabled = true, options: EngineOptions = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const worker = new Worker('/stockfish/stockfish-18-lite-single.js');
+    const worker = new Worker(`${import.meta.env.BASE_URL}stockfish/stockfish-18-lite-single.js`);
     workerRef.current = worker;
 
     worker.onmessage = (e: MessageEvent<string>) => {
